@@ -1,0 +1,195 @@
+version: "2"
+linters:
+  default: none
+  enable:
+    - asasalint
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - canonicalheader
+    - containedctx
+    - contextcheck
+    - copyloopvar
+    - decorder
+    - depguard
+    - dogsled
+    - dupl
+    - durationcheck
+    - err113
+    - errcheck
+    - errname
+    - errorlint
+    - exhaustive
+    - exhaustruct
+    - exptostd
+    - fatcontext
+    - forbidigo
+    - forcetypeassert
+    - ginkgolinter
+    - gocheckcompilerdirectives
+    - gochecknoinits
+    - gochecksumtype
+    - goconst
+    - gocritic
+    - goheader
+    - gomoddirectives
+    - gomodguard
+    - goprintffuncname
+    - gosec
+    - gosmopolitan
+    - govet
+    - grouper
+    - iface
+    - importas
+    - inamedparam
+    - ineffassign
+    - interfacebloat
+    - intrange
+    - lll
+    - loggercheck
+    - makezero
+    - mirror
+    - misspell
+    - musttag
+    - nakedret
+    - nilerr
+    - nilnesserr
+    - noctx
+    - nonamedreturns
+    - nosprintfhostport
+    # - paralleltest
+    - perfsprint
+    - prealloc
+    - predeclared
+    - promlinter
+    - protogetter
+    - reassign
+    - revive
+    - rowserrcheck
+    - sloglint
+    - spancheck
+    - sqlclosecheck
+    - staticcheck
+    - tagalign
+    - tagliatelle
+    - testableexamples
+    - testifylint
+    - testpackage
+    - thelper
+    - unconvert
+    - unparam
+    - unused
+    - usestdlibvars
+    - usetesting
+    - wastedassign
+    - whitespace
+    - wrapcheck
+    # - wsl
+    - zerologlint
+  settings:
+    exhaustive:
+      # Presence of "default" case in switch statements satisfies exhaustiveness,
+      # even if all enum members are not listed.
+      # Default: false
+      default-signifies-exhaustive: true
+    gosec:
+      excludes:
+        - G104
+        - G301
+        - G306
+    revive:
+      rules:
+        - name: blank-imports
+          disabled: true
+    depguard:
+      rules:
+        all:
+          deny:
+            - pkg: "math/rand$"
+              desc: use math/rand/v2
+            - pkg: reflect
+              desc: Please don't use reflect package
+            - pkg: io/ioutil
+              desc: io/ioutil package has been deprecated
+    wsl:
+      # Allows assignments to be cuddled with variables used in calls on
+      # line above and calls to be cuddled with assignments of variables
+      # used in call on line above.
+      # https://github.com/bombsimon/wsl/blob/HEAD/doc/configuration.md#allow-assign-and-call
+      # Default: true
+      allow-assign-and-call: false
+      # If the number of lines in a case block is equal to or lager than this number,
+      # the case *must* end white a newline.
+      # https://github.com/bombsimon/wsl/blob/HEAD/doc/configuration.md#force-case-trailing-whitespace
+      # Default: 0
+      force-case-trailing-whitespace: 2
+      # Causes an error when an If statement that checks an error variable doesn't
+      # cuddle with the assignment of that variable.
+      # https://github.com/bombsimon/wsl/blob/HEAD/doc/configuration.md#force-err-cuddling
+      # Default: false
+      force-err-cuddling: true
+      # Default: false
+      allow-cuddle-declarations: true
+      allow-trailing-comment: true
+    tagliatelle:
+      case:
+        rules:
+          json: snake
+          yaml: snake
+          xml: camel
+          bson: camel
+          avro: snake
+          mapstructure: kebab
+    cyclop:
+      # The maximal code complexity to report.
+      # Default: 10
+      max-complexity: 20
+    exhaustruct:
+      exclude:
+        - ^net/http.Client$
+        - ^net/http.Cookie$
+        - ^net/http.Request$
+        - ^net/http.Response$
+        - ^net/http.Server$
+        - ^net/http.Transport$
+        - ^net/url.URL$
+        - ^log/slog.HandlerOptions$
+        - ^os/exec.Cmd$
+        - ^reflect.StructField$
+        - ^github.com/Shopify/sarama.Config$
+        - ^github.com/Shopify/sarama.ProducerMessage$
+        - ^github.com/mitchellh/mapstructure.DecoderConfig$
+        - ^github.com/prometheus/client_golang/.+Opts$
+        - ^github.com/spf13/cobra.Command$
+        - ^github.com/spf13/cobra.CompletionOptions$
+        - ^github.com/stretchr/testify/mock.Mock$
+        - ^github.com/testcontainers/testcontainers-go.+Request$
+        - ^github.com/testcontainers/testcontainers-go.FromDockerfile$
+        - ^golang.org/x/tools/go/analysis.Analyzer$
+        - ^google.golang.org/protobuf/.+Options$
+        - ^gopkg.in/yaml.v3.Node$
+        - ^github.com/golang-jwt/jwt.v5.RegisteredClaims$
+        - ^github.com/golang-migrate/migrate.v4.database.pgx.v5.Config$
+        - ^github.com/redis/go-redis.v9.Options$
+  exclusions:
+    generated: lax
+    rules:
+      - linters:
+          - errcheck
+        source: "^\\s*defer\\s+"
+      - linters:
+          - bodyclose
+          - dupl
+          - errcheck
+          - exhaustruct
+          - goconst
+          - gosec
+          - noctx
+          - wrapcheck
+        path: _test\.go
+formatters:
+  enable:
+    - gofmt
+    # Linter broken, but formatter is fine
+    # - gofumpt
+    - goimports
