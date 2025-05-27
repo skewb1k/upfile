@@ -3,24 +3,37 @@ package cmd
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"os/exec"
 
+	cc "github.com/ivanpirog/coloredcobra"
 	"github.com/spf13/cobra"
 )
 
-func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int {
+func Main(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int {
 	rootCmd := &cobra.Command{
 		Use: "upfile",
 	}
+
+	// TODO: adjust colors
+	cc.Init(&cc.Config{
+		RootCmd:         rootCmd,
+		Headings:        cc.HiCyan + cc.Bold + cc.Underline,
+		Commands:        cc.HiYellow + cc.Bold,
+		Example:         cc.Italic,
+		ExecName:        cc.Bold,
+		Flags:           cc.Bold,
+		NoExtraNewlines: true,
+	})
 
 	rootCmd.SetArgs(args)
 	rootCmd.SetIn(stdin)
 	rootCmd.SetOut(stdout)
 	rootCmd.SetErr(stderr)
 
-	rootCmd.AddCommand(versionCmd())
+	rootCmd.AddCommand(version())
+	rootCmd.AddCommand(link())
+	rootCmd.AddCommand(diff())
 
 	ctx := context.Background()
 
@@ -34,20 +47,4 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	}
 
 	return 0
-}
-
-const Version = "v0.0.1"
-
-func versionCmd() *cobra.Command {
-	return &cobra.Command{
-		Use:   "version",
-		Short: "Print version",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			_, err := fmt.Fprintf(cmd.OutOrStdout(), "%s\n", Version)
-			if err != nil {
-				return fmt.Errorf("failed to print: %w", err)
-			}
-			return nil
-		},
-	}
 }

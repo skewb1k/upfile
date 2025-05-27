@@ -96,6 +96,7 @@ linters:
       excludes:
         - G104
         - G301
+        - G304
         - G306
     revive:
       rules:
@@ -162,6 +163,7 @@ linters:
         - ^github.com/prometheus/client_golang/.+Opts$
         - ^github.com/spf13/cobra.Command$
         - ^github.com/spf13/cobra.CompletionOptions$
+        - ^github.com/ivanpirog/coloredcobra.Config$
         - ^github.com/stretchr/testify/mock.Mock$
         - ^github.com/testcontainers/testcontainers-go.+Request$
         - ^github.com/testcontainers/testcontainers-go.FromDockerfile$
