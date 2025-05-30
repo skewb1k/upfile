@@ -2,11 +2,25 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
+
+	"upfile/internal/service"
+	storeFs "upfile/internal/store/fs"
 
 	"github.com/spf13/cobra"
 )
+
+func FileExistsAndReadable(path string) error {
+	f, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	_ = f.Close()
+	return nil
+}
 
 func diff() *cobra.Command {
 	return &cobra.Command{
@@ -14,34 +28,49 @@ func diff() *cobra.Command {
 		Short: "Diff with origin",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			path, err := filepath.Abs(filepath.Clean(args[0]))
+			path, err := filepath.Abs(args[0])
 			if err != nil {
 				return fmt.Errorf("failed to get abs path to file: %w", err)
 			}
 
-			home, err := os.UserHomeDir()
+			if err := FileExistsAndReadable(path); err != nil {
+				return err
+			}
+
+			baseDir := getBaseDir()
+
+			upstreamContent, err := service.GetUpstream(cmd.Context(),
+				storeFs.New(baseDir),
+				args[0],
+			)
 			if err != nil {
-				return fmt.Errorf("failed to get current user's home dir: %w", err)
+				return err
 			}
 
-			baseDir := filepath.Join(home, globalDir)
-			_ = baseDir
-
-			// c := commitsFs.NewStore(baseDir)
-			// e := entriesFs.NewStore(baseDir)
-
-			// s := service.New(c, e)
-
-			// res, err := s.Diff(cmd.Context(), path)
-			// if err != nil {
-			// 	return fmt.Errorf("failed to link: %w", err)
-			// }
-
-			if _, err := fmt.Fprintf(cmd.OutOrStdout(), "Linked: %s\n", path); err != nil {
-				return fmt.Errorf("failed to write: %w", err)
-			}
-
-			return nil
+			return gitDiff(cmd.OutOrStdout(), cmd.ErrOrStderr(), path, upstreamContent)
 		},
 	}
+}
+
+func gitDiff(stdout, stderr io.Writer, filePath string, content string) error {
+	tmpFile, err := os.CreateTemp("", Name+"-diff-*.tmp")
+	if err != nil {
+		return fmt.Errorf("failed to create temp file: %w", err)
+	}
+	defer os.Remove(tmpFile.Name())
+
+	if _, err := tmpFile.WriteString(content); err != nil {
+		return fmt.Errorf("failed to write to temp file: %w", err)
+	}
+	_ = tmpFile.Close()
+
+	cmd := exec.Command("git", "diff", "--no-index", tmpFile.Name(), filePath)
+	cmd.Stdout = stdout
+	cmd.Stderr = stderr
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("git diff failed: %w", err)
+	}
+
+	return nil
 }

@@ -1,0 +1,8 @@
+package store
+
+import "errors"
+
+var (
+	ErrExists   = errors.New("already exists")
+	ErrNotFound = errors.New("not found")
+)

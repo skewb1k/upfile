@@ -1,20 +1,14 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 
-	commitsFs "upfile/internal/commits/fs"
-	entriesFs "upfile/internal/entries/fs"
-	headFs "upfile/internal/head/fs"
 	"upfile/internal/service"
+	storeFs "upfile/internal/store/fs"
 
 	"github.com/spf13/cobra"
 )
-
-const globalDir = ".local/upfile"
 
 func link() *cobra.Command {
 	return &cobra.Command{
@@ -27,25 +21,12 @@ func link() *cobra.Command {
 				return fmt.Errorf("failed to get abs path to file: %w", err)
 			}
 
-			home, err := os.UserHomeDir()
-			if err != nil {
-				return fmt.Errorf("failed to get current user's home dir: %w", err)
-			}
+			baseDir := getBaseDir()
 
-			baseDir := filepath.Join(home, globalDir)
-
-			c := commitsFs.NewStore(baseDir)
-			h := headFs.NewStore(baseDir)
-			e := entriesFs.NewStore(baseDir)
-
-			s := service.New(c, h, e)
-
-			if err := s.Link(cmd.Context(), path); err != nil {
-				if errors.Is(err, service.ErrAlreadyLinked) {
-					cmd.Println("Already linked")
-					return nil
-				}
-
+			if err := service.Link(cmd.Context(),
+				storeFs.New(baseDir),
+				path,
+			); err != nil {
 				return fmt.Errorf("failed to link: %w", err)
 			}
 
