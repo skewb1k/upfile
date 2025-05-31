@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"upfile/internal/store"
 )
 
 type Repr struct {
@@ -20,27 +22,30 @@ func newRepr() *Repr {
 	}
 }
 
-func (e *Repr) Add(entry string) {
-	if _, exists := e.m[entry]; !exists {
-		e.m[entry] = struct{}{}
-		e.l = append(e.l, entry)
+func (r *Repr) Add(entry string) bool {
+	if _, exists := r.m[entry]; exists {
+		return false
 	}
+
+	r.m[entry] = struct{}{}
+	r.l = append(r.l, entry)
+	return true
 }
 
-func (e Repr) Save(path string) error {
+func (r Repr) Save(path string) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		return fmt.Errorf("failed to create dir: %w", err)
+		return fmt.Errorf("create dir: %w", err)
 	}
 
 	f, err := os.Create(path)
 	if err != nil {
-		return fmt.Errorf("failed to create file: %w", err)
+		return fmt.Errorf("create file: %w", err)
 	}
 	defer f.Close()
 
-	for _, entry := range e.l {
+	for _, entry := range r.l {
 		if _, err := f.WriteString(entry + "\n"); err != nil {
-			return fmt.Errorf("failed to write string: %w", err)
+			return fmt.Errorf("write entry: %w", err)
 		}
 	}
 
@@ -54,7 +59,7 @@ func loadRepr(path string) (*Repr, error) {
 			return newRepr(), nil
 		}
 
-		return &Repr{}, fmt.Errorf("failed to open file: %w", err)
+		return &Repr{}, fmt.Errorf("open entries file: %w", err)
 	}
 	defer f.Close()
 
@@ -65,11 +70,11 @@ func loadRepr(path string) (*Repr, error) {
 
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
-		entries.Add(scanner.Text())
+		_ = entries.Add(scanner.Text())
 	}
 
 	if err := scanner.Err(); err != nil {
-		return &Repr{}, fmt.Errorf("failed to write string: %w", err)
+		return &Repr{}, fmt.Errorf("write entry: %w", err)
 	}
 
 	return &entries, nil
@@ -77,47 +82,49 @@ func loadRepr(path string) (*Repr, error) {
 
 const entriesFname = "ENTRIES"
 
-func (p Store) CreateEntry(
+func (s Store) CreateEntry(
 	ctx context.Context,
 	fname string,
 	entry string,
 ) error {
-	fpath := filepath.Join(p.BaseDir, fname, entriesFname)
+	fpath := filepath.Join(s.BaseDir, fname, entriesFname)
 	repr, err := loadRepr(fpath)
 	if err != nil {
-		return fmt.Errorf("failed to load heads file: %w", err)
+		return err
 	}
 
-	repr.Add(entry)
+	if !repr.Add(entry) {
+		return store.ErrExists
+	}
 
 	if err := repr.Save(fpath); err != nil {
-		return fmt.Errorf("failed to write heads file: %w", err)
+		return err
 	}
 
 	return nil
 }
 
-func (p Store) CheckEntry(ctx context.Context, fname string, entry string) (bool, error) {
-	repr, err := loadRepr(filepath.Join(p.BaseDir, fname, entriesFname))
+func (s Store) CheckEntry(ctx context.Context, fname string, entry string) (bool, error) {
+	repr, err := loadRepr(filepath.Join(s.BaseDir, fname, entriesFname))
 	if err != nil {
-		return false, fmt.Errorf("failed to load heads file: %w", err)
+		return false, err
 	}
 
 	_, exists := repr.m[entry]
 	return exists, nil
 }
 
-func (p Store) GetEntries(ctx context.Context, fname string) ([]string, error) {
-	repr, err := loadRepr(filepath.Join(p.BaseDir, fname, entriesFname))
+func (s Store) GetEntries(ctx context.Context, fname string) ([]string, error) {
+	repr, err := loadRepr(filepath.Join(s.BaseDir, fname, entriesFname))
 	if err != nil {
-		return nil, fmt.Errorf("failed to load heads file: %w", err)
+		return nil, err
 	}
 
 	return repr.l, nil
 }
 
-func (p Store) GetFiles(ctx context.Context) ([]string, error) {
-	entries, err := os.ReadDir(p.BaseDir)
+func (s Store) GetFiles(ctx context.Context) ([]string, error) {
+	entries, err := os.ReadDir(s.BaseDir)
 	if err != nil {
 		return nil, fmt.Errorf("read base dir: %w", err)
 	}

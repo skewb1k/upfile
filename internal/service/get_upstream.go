@@ -4,18 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"path/filepath"
 
 	"upfile/internal/store"
 )
 
-func GetUpstream(
+func (s Service) GetUpstream(
 	ctx context.Context,
-	s store.Provider,
-	relPath string,
+	fname string,
 ) (string, error) {
-	fname := filepath.Base(relPath)
-	headHash, err := s.GetHead(ctx, fname)
+	headHash, err := s.store.GetHead(ctx, fname)
 	if err != nil {
 		if errors.Is(err, store.ErrNotFound) {
 			return "", ErrNotTracked
@@ -24,7 +21,7 @@ func GetUpstream(
 		return "", fmt.Errorf("get head: %w", err)
 	}
 
-	commit, err := s.GetCommitByHash(ctx, fname, headHash)
+	commit, err := s.store.GetCommitByHash(ctx, fname, headHash)
 	if err != nil {
 		return "", fmt.Errorf("get commit by hash: %w", err)
 	}

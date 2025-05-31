@@ -40,10 +40,11 @@ func Main(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) in
 	rootCmd.SetErr(stderr)
 
 	rootCmd.AddCommand(version())
-	rootCmd.AddCommand(link())
+	rootCmd.AddCommand(add())
 	rootCmd.AddCommand(diff())
 	rootCmd.AddCommand(show())
 	rootCmd.AddCommand(list())
+	rootCmd.AddCommand(pull())
 
 	ctx := context.Background()
 

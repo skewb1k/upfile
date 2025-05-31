@@ -10,7 +10,7 @@ type Commit struct {
 	Parent  string
 }
 
-type Provider interface {
+type Store interface {
 	GetFiles(ctx context.Context) ([]string, error)
 
 	CreateCommit(ctx context.Context, fname string, commit *Commit) error

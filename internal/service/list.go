@@ -3,15 +3,12 @@ package service
 import (
 	"context"
 	"fmt"
-
-	"upfile/internal/store"
 )
 
-func GetFiles(
+func (s Service) GetFiles(
 	ctx context.Context,
-	s store.Provider,
 ) ([]string, error) {
-	files, err := s.GetFiles(ctx)
+	files, err := s.store.GetFiles(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("get files: %w", err)
 	}

@@ -30,19 +30,16 @@ func diff() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			path, err := filepath.Abs(args[0])
 			if err != nil {
-				return fmt.Errorf("failed to get abs path to file: %w", err)
+				return fmt.Errorf("get abs path to file: %w", err)
 			}
 
 			if err := FileExistsAndReadable(path); err != nil {
 				return err
 			}
 
-			baseDir := getBaseDir()
+			s := service.New(storeFs.New(getBaseDir()))
 
-			upstreamContent, err := service.GetUpstream(cmd.Context(),
-				storeFs.New(baseDir),
-				args[0],
-			)
+			upstreamContent, err := s.GetUpstream(cmd.Context(), filepath.Base(args[0]))
 			if err != nil {
 				return err
 			}
@@ -55,12 +52,12 @@ func diff() *cobra.Command {
 func gitDiff(stdout, stderr io.Writer, filePath string, content string) error {
 	tmpFile, err := os.CreateTemp("", Name+"-diff-*.tmp")
 	if err != nil {
-		return fmt.Errorf("failed to create temp file: %w", err)
+		return fmt.Errorf("create temp file: %w", err)
 	}
 	defer os.Remove(tmpFile.Name())
 
 	if _, err := tmpFile.WriteString(content); err != nil {
-		return fmt.Errorf("failed to write to temp file: %w", err)
+		return fmt.Errorf("write to temp file: %w", err)
 	}
 	_ = tmpFile.Close()
 
@@ -68,9 +65,7 @@ func gitDiff(stdout, stderr io.Writer, filePath string, content string) error {
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
 
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("git diff failed: %w", err)
-	}
+	_ = cmd.Run()
 
 	return nil
 }
