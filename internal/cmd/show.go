@@ -17,7 +17,7 @@ func show() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			s := service.New(storeFs.New(getBaseDir()))
 
-			upstreamContent, err := s.GetUpstream(cmd.Context(), filepath.Base(args[0]))
+			upstreamContent, err := s.Show(cmd.Context(), filepath.Base(args[0]))
 			if err != nil {
 				return err
 			}

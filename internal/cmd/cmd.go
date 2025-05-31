@@ -41,6 +41,7 @@ func Main(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) in
 
 	rootCmd.AddCommand(version())
 	rootCmd.AddCommand(add())
+	rootCmd.AddCommand(remove())
 	rootCmd.AddCommand(diff())
 	rootCmd.AddCommand(show())
 	rootCmd.AddCommand(list())

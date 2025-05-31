@@ -8,7 +8,7 @@ import (
 	"upfile/internal/store"
 )
 
-func (s Service) GetUpstream(
+func (s Service) Show(
 	ctx context.Context,
 	fname string,
 ) (string, error) {

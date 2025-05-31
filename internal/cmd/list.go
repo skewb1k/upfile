@@ -11,14 +11,14 @@ import (
 
 func list() *cobra.Command {
 	return &cobra.Command{
-		Use:     "list <filename>",
+		Use:     "list",
 		Short:   "List tracked files",
 		Aliases: []string{"ls"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			s := service.New(storeFs.New(getBaseDir()))
 
-			files, err := s.GetFiles(cmd.Context())
+			files, err := s.List(cmd.Context())
 			if err != nil {
 				return err
 			}

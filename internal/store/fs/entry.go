@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 
 	"upfile/internal/store"
 )
@@ -20,6 +21,19 @@ func newRepr() *Repr {
 		m: make(map[string]struct{}),
 		l: make([]string, 0),
 	}
+}
+
+func (r *Repr) Del(entry string) bool {
+	if _, exists := r.m[entry]; !exists {
+		return false
+	}
+
+	delete(r.m, entry)
+	r.l = slices.DeleteFunc(r.l, func(el string) bool {
+		return el == entry
+	})
+
+	return true
 }
 
 func (r *Repr) Add(entry string) bool {
@@ -137,4 +151,26 @@ func (s Store) GetFiles(ctx context.Context) ([]string, error) {
 	}
 
 	return dirs, nil
+}
+
+func (s Store) DeleteEntry(
+	ctx context.Context,
+	fname string,
+	entry string,
+) error {
+	fpath := filepath.Join(s.BaseDir, fname, entriesFname)
+	repr, err := loadRepr(fpath)
+	if err != nil {
+		return err
+	}
+
+	if !repr.Del(entry) {
+		return store.ErrNotFound
+	}
+
+	if err := repr.Save(fpath); err != nil {
+		return err
+	}
+
+	return nil
 }

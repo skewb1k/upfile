@@ -51,8 +51,10 @@ func (s Service) Add(
 		return fmt.Errorf("create entry: %w", err)
 	}
 
-	if err := s.store.SetHead(ctx, fname, hash); err != nil {
-		return fmt.Errorf("set head: %w", err)
+	if err := s.store.SetHeadIfNotExists(ctx, fname, hash); err != nil {
+		if !errors.Is(err, store.ErrExists) {
+			return fmt.Errorf("set head: %w", err)
+		}
 	}
 
 	return nil

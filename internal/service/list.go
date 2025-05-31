@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func (s Service) GetFiles(
+func (s Service) List(
 	ctx context.Context,
 ) ([]string, error) {
 	files, err := s.store.GetFiles(ctx)

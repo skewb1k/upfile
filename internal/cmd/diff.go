@@ -13,15 +13,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func FileExistsAndReadable(path string) error {
-	f, err := os.Open(path)
-	if err != nil {
-		return err
-	}
-	_ = f.Close()
-	return nil
-}
-
 func diff() *cobra.Command {
 	return &cobra.Command{
 		Use:   "diff <path>",
@@ -33,13 +24,9 @@ func diff() *cobra.Command {
 				return fmt.Errorf("get abs path to file: %w", err)
 			}
 
-			if err := FileExistsAndReadable(path); err != nil {
-				return err
-			}
-
 			s := service.New(storeFs.New(getBaseDir()))
 
-			upstreamContent, err := s.GetUpstream(cmd.Context(), filepath.Base(args[0]))
+			upstreamContent, err := s.Diff(cmd.Context(), filepath.Base(args[0]), path)
 			if err != nil {
 				return err
 			}

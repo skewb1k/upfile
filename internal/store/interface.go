@@ -19,7 +19,9 @@ type Store interface {
 	CreateEntry(ctx context.Context, fname string, entry string) error
 	CheckEntry(ctx context.Context, fname string, entry string) (bool, error)
 	GetEntries(ctx context.Context, fname string) ([]string, error)
+	DeleteEntry(ctx context.Context, fname string, entry string) error
 
 	SetHead(ctx context.Context, fname string, value string) error
+	SetHeadIfNotExists(ctx context.Context, fname string, value string) error
 	GetHead(ctx context.Context, fname string) (string, error)
 }
