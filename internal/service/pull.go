@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 
 	"upfile/internal/store"
 )
@@ -15,18 +16,9 @@ func (s Service) Pull(
 	fname string,
 	destDir string,
 ) (bool, error) {
-	headHash, err := s.store.GetHead(ctx, fname)
+	content, err := s.store.GetUpstream(ctx, fname)
 	if err != nil {
-		if errors.Is(err, store.ErrNotFound) {
-			return false, ErrNotTracked
-		}
-
-		return false, fmt.Errorf("get head: %w", err)
-	}
-
-	commit, err := s.store.GetCommitByHash(ctx, fname, headHash)
-	if err != nil {
-		return false, fmt.Errorf("get commit by hash: %w", err)
+		return false, fmt.Errorf("get upstream: %w", err)
 	}
 
 	destPath := filepath.Join(destDir, fname)
@@ -37,7 +29,7 @@ func (s Service) Pull(
 			return false, fmt.Errorf("check existing file: %w", err)
 		}
 	} else {
-		if computeHash(existing) == headHash {
+		if slices.Equal(existing, []byte(content)) {
 			return false, nil
 		}
 	}
@@ -52,7 +44,7 @@ func (s Service) Pull(
 		return false, fmt.Errorf("create parent dirs: %w", err)
 	}
 
-	if err := os.WriteFile(destPath, []byte(commit.Content), 0o644); err != nil {
+	if err := os.WriteFile(destPath, []byte(content), 0o644); err != nil {
 		return false, fmt.Errorf("write file: %w", err)
 	}
 

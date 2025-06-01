@@ -26,7 +26,7 @@ func diff() *cobra.Command {
 
 			s := service.New(storeFs.New(getBaseDir()))
 
-			upstreamContent, err := s.Diff(cmd.Context(), filepath.Base(args[0]), path)
+			upstreamContent, err := s.Diff(cmd.Context(), filepath.Base(args[0]))
 			if err != nil {
 				return err
 			}

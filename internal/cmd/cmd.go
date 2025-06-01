@@ -45,7 +45,9 @@ func Main(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) in
 	rootCmd.AddCommand(diff())
 	rootCmd.AddCommand(show())
 	rootCmd.AddCommand(list())
+	rootCmd.AddCommand(status())
 	rootCmd.AddCommand(pull())
+	rootCmd.AddCommand(push())
 
 	ctx := context.Background()
 

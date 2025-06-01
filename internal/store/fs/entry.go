@@ -1,176 +1,188 @@
 package storeFs
 
 import (
-	"bufio"
 	"context"
+	"encoding/base64"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
-	"slices"
 
 	"upfile/internal/store"
 )
 
-type Repr struct {
-	m map[string]struct{}
-	l []string
+const (
+	entriesDirname = "entries"
+	byDirName      = "by-dir"
+	byName         = "by-name"
+)
+
+func (s Store) getPathToEntriesByFname(fname string) string {
+	return filepath.Join(
+		s.BaseDir,
+		entriesDirname,
+		byName,
+		fname,
+	)
 }
 
-func newRepr() *Repr {
-	return &Repr{
-		m: make(map[string]struct{}),
-		l: make([]string, 0),
-	}
+func (s Store) getPathToEntriesByDir(dir string) string {
+	return filepath.Join(
+		s.BaseDir,
+		entriesDirname,
+		byDirName,
+		dir,
+	)
 }
 
-func (r *Repr) Del(entry string) bool {
-	if _, exists := r.m[entry]; !exists {
-		return false
-	}
-
-	delete(r.m, entry)
-	r.l = slices.DeleteFunc(r.l, func(el string) bool {
-		return el == entry
-	})
-
-	return true
+func encodePath(path []byte) string {
+	return base64.URLEncoding.EncodeToString(path)
 }
 
-func (r *Repr) Add(entry string) bool {
-	if _, exists := r.m[entry]; exists {
-		return false
-	}
-
-	r.m[entry] = struct{}{}
-	r.l = append(r.l, entry)
-	return true
-}
-
-func (r Repr) Save(path string) error {
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		return fmt.Errorf("create dir: %w", err)
-	}
-
-	f, err := os.Create(path)
+func decodePath(encoded string) ([]byte, error) {
+	res, err := base64.URLEncoding.DecodeString(encoded)
 	if err != nil {
-		return fmt.Errorf("create file: %w", err)
-	}
-	defer f.Close()
-
-	for _, entry := range r.l {
-		if _, err := f.WriteString(entry + "\n"); err != nil {
-			return fmt.Errorf("write entry: %w", err)
-		}
+		return nil, fmt.Errorf("failed to decode base64: %w", err)
 	}
 
-	return nil
+	return res, nil
 }
-
-func loadRepr(path string) (*Repr, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return newRepr(), nil
-		}
-
-		return &Repr{}, fmt.Errorf("open entries file: %w", err)
-	}
-	defer f.Close()
-
-	entries := Repr{
-		m: make(map[string]struct{}),
-		l: make([]string, 0),
-	}
-
-	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		_ = entries.Add(scanner.Text())
-	}
-
-	if err := scanner.Err(); err != nil {
-		return &Repr{}, fmt.Errorf("write entry: %w", err)
-	}
-
-	return &entries, nil
-}
-
-const entriesFname = "ENTRIES"
 
 func (s Store) CreateEntry(
 	ctx context.Context,
 	fname string,
-	entry string,
+	entryDir string,
 ) error {
-	fpath := filepath.Join(s.BaseDir, fname, entriesFname)
-	repr, err := loadRepr(fpath)
+	encoded := encodePath([]byte(entryDir))
+
+	byDirPath := s.getPathToEntriesByDir(encoded)
+	if err := os.MkdirAll(byDirPath, 0o755); err != nil {
+		return fmt.Errorf("mkdir by-dir path: %w", err)
+	}
+
+	byDirFile, err := os.OpenFile(filepath.Join(byDirPath, fname), os.O_CREATE|os.O_EXCL, 0o644)
 	if err != nil {
-		return err
+		if errors.Is(err, os.ErrExist) {
+			return store.ErrExists
+		}
+
+		return fmt.Errorf("create by-dir entry: %w", err)
+	}
+	_ = byDirFile.Close()
+
+	byNameDir := s.getPathToEntriesByFname(fname)
+
+	if err := os.MkdirAll(byNameDir, 0o755); err != nil {
+		return fmt.Errorf("mkdir by-name dir: %w", err)
 	}
 
-	if !repr.Add(entry) {
-		return store.ErrExists
-	}
+	byNameFile, err := os.OpenFile(filepath.Join(byNameDir, encoded), os.O_CREATE|os.O_EXCL, 0o644)
+	if err != nil {
+		if errors.Is(err, os.ErrExist) {
+			return store.ErrExists
+		}
 
-	if err := repr.Save(fpath); err != nil {
-		return err
+		return fmt.Errorf("create by-name entry: %w", err)
 	}
+	_ = byNameFile.Close()
 
 	return nil
 }
 
-func (s Store) CheckEntry(ctx context.Context, fname string, entry string) (bool, error) {
-	repr, err := loadRepr(filepath.Join(s.BaseDir, fname, entriesFname))
+func (s Store) GetEntriesByFname(ctx context.Context, fname string) ([]string, error) {
+	entries, err := os.ReadDir(s.getPathToEntriesByFname(fname))
 	if err != nil {
-		return false, err
-	}
-
-	_, exists := repr.m[entry]
-	return exists, nil
-}
-
-func (s Store) GetEntries(ctx context.Context, fname string) ([]string, error) {
-	repr, err := loadRepr(filepath.Join(s.BaseDir, fname, entriesFname))
-	if err != nil {
-		return nil, err
-	}
-
-	return repr.l, nil
-}
-
-func (s Store) GetFiles(ctx context.Context) ([]string, error) {
-	entries, err := os.ReadDir(s.BaseDir)
-	if err != nil {
-		return nil, fmt.Errorf("read base dir: %w", err)
-	}
-
-	var dirs []string
-	for _, entry := range entries {
-		if entry.IsDir() {
-			dirs = append(dirs, entry.Name())
+		if errors.Is(err, os.ErrNotExist) {
+			return nil, nil
 		}
+
+		return nil, fmt.Errorf("read by-name path: %w", err)
 	}
 
-	return dirs, nil
+	result := make([]string, len(entries))
+	for i, entry := range entries {
+		e, err := decodePath(entry.Name())
+		if err != nil {
+			return nil, err
+		}
+
+		result[i] = string(e)
+	}
+
+	return result, nil
 }
 
 func (s Store) DeleteEntry(
 	ctx context.Context,
 	fname string,
-	entry string,
+	entryDir string,
 ) error {
-	fpath := filepath.Join(s.BaseDir, fname, entriesFname)
-	repr, err := loadRepr(fpath)
-	if err != nil {
-		return err
+	encoded := encodePath([]byte(entryDir))
+	byDirDir := s.getPathToEntriesByDir(encoded)
+
+	if err := os.Remove(filepath.Join(byDirDir, fname)); err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			err = store.ErrNotFound
+		}
+
+		return fmt.Errorf("remove by-dir entry file: %w", err)
 	}
 
-	if !repr.Del(entry) {
-		return store.ErrNotFound
+	if entries, err := os.ReadDir(byDirDir); err == nil && len(entries) == 0 {
+		if err := os.Remove(byDirDir); err != nil {
+			return fmt.Errorf("remove by-dir entry dir: %w", err)
+		}
 	}
 
-	if err := repr.Save(fpath); err != nil {
-		return err
+	byNameDir := s.getPathToEntriesByFname(fname)
+	if err := os.Remove(filepath.Join(byNameDir, encoded)); err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			err = store.ErrNotFound
+		}
+
+		return fmt.Errorf("remove by-name entry file: %w", err)
+	}
+
+	if entries, err := os.ReadDir(byNameDir); err == nil && len(entries) == 0 {
+		if err := os.Remove(byNameDir); err != nil {
+			return fmt.Errorf("remove by-name entry dir: %w", err)
+		}
 	}
 
 	return nil
+}
+
+func (s Store) CheckEntry(ctx context.Context, fname string, entryDir string) (bool, error) {
+	byNamePath := filepath.Join(s.getPathToEntriesByFname(fname), encodePath([]byte(entryDir)))
+
+	if _, err := os.Stat(byNamePath); err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return false, nil
+		}
+
+		return false, fmt.Errorf("stat by-name file: %w", err)
+	}
+
+	return true, nil
+}
+
+func (s Store) GetFilesByEntryDir(ctx context.Context, entryDir string) ([]string, error) {
+	encoded := encodePath([]byte(entryDir))
+	byDirDir := s.getPathToEntriesByDir(encoded)
+
+	entries, err := os.ReadDir(byDirDir)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil, nil
+		}
+
+		return nil, fmt.Errorf("read versions dir: %w", err)
+	}
+
+	dirs := make([]string, len(entries))
+	for i, entry := range entries {
+		dirs[i] = entry.Name()
+	}
+
+	return dirs, nil
 }

@@ -18,14 +18,14 @@ func FileExistsAndReadable(path string) error {
 
 func (s Service) Remove(
 	ctx context.Context,
-	entryPath string,
+	path string,
 ) error {
-	if err := FileExistsAndReadable(entryPath); err != nil {
+	if err := FileExistsAndReadable(path); err != nil {
 		return err
 	}
 
-	fname := filepath.Base(entryPath)
-	entryDir := filepath.Dir(entryPath)
+	fname := filepath.Base(path)
+	entryDir := filepath.Dir(path)
 
 	if err := s.store.DeleteEntry(ctx, fname, entryDir); err != nil {
 		return fmt.Errorf("delete entry: %w", err)

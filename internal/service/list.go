@@ -5,13 +5,32 @@ import (
 	"fmt"
 )
 
+type File struct {
+	Fname   string
+	Entries []string
+}
+
 func (s Service) List(
 	ctx context.Context,
-) ([]string, error) {
+) ([]File, error) {
 	files, err := s.store.GetFiles(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("get files: %w", err)
 	}
 
-	return files, nil
+	res := make([]File, len(files))
+
+	for i, fname := range files {
+		entries, err := s.store.GetEntriesByFname(ctx, fname)
+		if err != nil {
+			return nil, fmt.Errorf("get entries by filename: %w", err)
+		}
+
+		res[i] = File{
+			Fname:   fname,
+			Entries: entries,
+		}
+	}
+
+	return res, nil
 }

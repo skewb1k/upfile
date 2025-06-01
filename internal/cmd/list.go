@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"strings"
-
 	"upfile/internal/service"
 	storeFs "upfile/internal/store/fs"
 
@@ -23,7 +21,17 @@ func list() *cobra.Command {
 				return err
 			}
 
-			cmd.Println(strings.Join(files, "\n"))
+			if len(files) == 0 {
+				return nil
+			}
+
+			for _, f := range files {
+				cmd.Println(f.Fname)
+				for _, dir := range f.Entries {
+					cmd.Printf("  %s\n", dir)
+				}
+				cmd.Println()
+			}
 
 			return nil
 		},
