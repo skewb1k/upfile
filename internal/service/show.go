@@ -9,7 +9,7 @@ func (s Service) Show(
 	ctx context.Context,
 	fname string,
 ) (string, error) {
-	content, err := s.store.GetUpstream(ctx, fname)
+	content, err := s.indexStore.GetUpstream(ctx, fname)
 	if err != nil {
 		return "", fmt.Errorf("get upstream: %w", err)
 	}

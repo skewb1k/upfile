@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"os"
 	"path/filepath"
 )
 
@@ -11,10 +10,9 @@ func (s Service) Add(
 	ctx context.Context,
 	path string,
 ) error {
-	fname := filepath.Base(path)
-	entryDir := filepath.Dir(path)
+	fname, entryDir := filepath.Base(path), filepath.Dir(path)
 
-	entryExists, err := s.store.CheckEntry(ctx, fname, entryDir)
+	entryExists, err := s.indexStore.CheckEntry(ctx, fname, entryDir)
 	if err != nil {
 		return fmt.Errorf("get entry: %w", err)
 	}
@@ -23,22 +21,23 @@ func (s Service) Add(
 		return ErrAlreadyTracked
 	}
 
-	if err := s.store.CreateEntry(ctx, fname, entryDir); err != nil {
+	if err := s.indexStore.CreateEntry(ctx, fname, entryDir); err != nil {
 		return fmt.Errorf("create entry: %w", err)
 	}
 
-	upstremExists, err := s.store.CheckUpstream(ctx, fname)
+	upstreamExists, err := s.indexStore.CheckUpstream(ctx, fname)
 	if err != nil {
 		return fmt.Errorf("check upstream: %w", err)
 	}
 
-	if !upstremExists {
-		content, err := os.ReadFile(path)
+	if !upstreamExists {
+		content, err := s.userfileStore.ReadFile(ctx, path)
 		if err != nil {
+			// TODO: handle not found error
 			return fmt.Errorf("read file: %w", err)
 		}
 
-		if err := s.store.SetUpstream(ctx, fname, string(content)); err != nil {
+		if err := s.indexStore.SetUpstream(ctx, fname, content); err != nil {
 			return fmt.Errorf("set upstream: %w", err)
 		}
 	}

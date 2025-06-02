@@ -1,8 +1,10 @@
-package store
+package index
 
 import (
 	"context"
 )
+
+//go:generate go tool mockgen -typed -package index -destination ./store_mock.go . Store
 
 type Store interface {
 	GetFiles(ctx context.Context) ([]string, error)

@@ -1,4 +1,4 @@
-package storeFs
+package indexFs
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"upfile/internal/store"
+	"upfile/internal/index"
 )
 
 type Store struct {
@@ -57,7 +57,7 @@ func (s Store) GetUpstream(ctx context.Context, fname string) (string, error) {
 	data, err := os.ReadFile(filepath.Join(s.BaseDir, versionsDirname, fname))
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return "", store.ErrNotFound
+			return "", index.ErrNotFound
 		}
 
 		return "", fmt.Errorf("read file: %w", err)

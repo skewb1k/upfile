@@ -191,6 +191,7 @@ linters:
           - bodyclose
           - dupl
           - errcheck
+          - err113
           - exhaustruct
           - goconst
           - gosec

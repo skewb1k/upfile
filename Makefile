@@ -18,3 +18,7 @@ test:
 build:
 	go build -o ~/.cache/bin/upfile ./cmd/upfile
 
+.PHONY: gen
+gen:
+	@go generate ./...
+

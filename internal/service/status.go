@@ -26,7 +26,7 @@ func (s Service) Status(
 	ctx context.Context,
 	dir string,
 ) ([]Entry, error) {
-	files, err := s.store.GetFilesByEntryDir(ctx, dir)
+	files, err := s.indexStore.GetFilesByEntryDir(ctx, dir)
 	if err != nil {
 		return nil, fmt.Errorf("get files by entry dir: %w", err)
 	}
@@ -39,7 +39,7 @@ func (s Service) Status(
 			Status: EntryStatusUpToDate,
 		}
 
-		upstream, err := s.store.GetUpstream(ctx, filename)
+		upstream, err := s.indexStore.GetUpstream(ctx, filename)
 		if err != nil {
 			return nil, fmt.Errorf("get upstream: %w", err)
 		}

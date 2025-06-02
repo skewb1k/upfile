@@ -27,7 +27,7 @@ func (s Service) Remove(
 	fname := filepath.Base(path)
 	entryDir := filepath.Dir(path)
 
-	if err := s.store.DeleteEntry(ctx, fname, entryDir); err != nil {
+	if err := s.indexStore.DeleteEntry(ctx, fname, entryDir); err != nil {
 		return fmt.Errorf("delete entry: %w", err)
 	}
 

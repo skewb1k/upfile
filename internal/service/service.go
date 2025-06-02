@@ -1,13 +1,21 @@
 package service
 
-import "upfile/internal/store"
+import (
+	"upfile/internal/index"
+	"upfile/internal/userfile"
+)
 
 type Service struct {
-	store store.Store
+	indexStore    index.Store
+	userfileStore userfile.Store
 }
 
-func New(store store.Store) *Service {
+func New(
+	indexStore index.Store,
+	userfileStore userfile.Store,
+) *Service {
 	return &Service{
-		store: store,
+		indexStore:    indexStore,
+		userfileStore: userfileStore,
 	}
 }

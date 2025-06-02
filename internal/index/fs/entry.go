@@ -1,4 +1,4 @@
-package storeFs
+package indexFs
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"upfile/internal/store"
+	"upfile/internal/index"
 )
 
 const (
@@ -63,7 +63,7 @@ func (s Store) CreateEntry(
 	byDirFile, err := os.OpenFile(filepath.Join(byDirPath, fname), os.O_CREATE|os.O_EXCL, 0o644)
 	if err != nil {
 		if errors.Is(err, os.ErrExist) {
-			return store.ErrExists
+			return index.ErrExists
 		}
 
 		return fmt.Errorf("create by-dir entry: %w", err)
@@ -79,7 +79,7 @@ func (s Store) CreateEntry(
 	byNameFile, err := os.OpenFile(filepath.Join(byNameDir, encoded), os.O_CREATE|os.O_EXCL, 0o644)
 	if err != nil {
 		if errors.Is(err, os.ErrExist) {
-			return store.ErrExists
+			return index.ErrExists
 		}
 
 		return fmt.Errorf("create by-name entry: %w", err)
@@ -122,7 +122,7 @@ func (s Store) DeleteEntry(
 
 	if err := os.Remove(filepath.Join(byDirDir, fname)); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			err = store.ErrNotFound
+			err = index.ErrNotFound
 		}
 
 		return fmt.Errorf("remove by-dir entry file: %w", err)
@@ -137,7 +137,7 @@ func (s Store) DeleteEntry(
 	byNameDir := s.getPathToEntriesByFname(fname)
 	if err := os.Remove(filepath.Join(byNameDir, encoded)); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			err = store.ErrNotFound
+			err = index.ErrNotFound
 		}
 
 		return fmt.Errorf("remove by-name entry file: %w", err)

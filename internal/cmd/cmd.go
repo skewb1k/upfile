@@ -5,18 +5,13 @@ import (
 	"errors"
 	"io"
 	"os/exec"
-	"path/filepath"
 
-	"github.com/adrg/xdg"
 	cc "github.com/ivanpirog/coloredcobra"
+
 	"github.com/spf13/cobra"
 )
 
 const Name = "upfile"
-
-func getBaseDir() string {
-	return filepath.Join(xdg.DataHome, Name)
-}
 
 func Main(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int {
 	rootCmd := &cobra.Command{
@@ -41,13 +36,14 @@ func Main(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) in
 
 	rootCmd.AddCommand(version())
 	rootCmd.AddCommand(add())
-	rootCmd.AddCommand(remove())
-	rootCmd.AddCommand(diff())
-	rootCmd.AddCommand(show())
-	rootCmd.AddCommand(list())
-	rootCmd.AddCommand(status())
-	rootCmd.AddCommand(pull())
-	rootCmd.AddCommand(push())
+	// rootCmd.AddCommand(remove())
+	// rootCmd.AddCommand(diff())
+	// rootCmd.AddCommand(show())
+	// rootCmd.AddCommand(list())
+	// rootCmd.AddCommand(status())
+	// rootCmd.AddCommand(pull())
+	// rootCmd.AddCommand(push())
+	// rootCmd.AddCommand(sync())
 
 	ctx := context.Background()
 
