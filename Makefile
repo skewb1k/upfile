@@ -2,17 +2,17 @@
 
 .PHONY: fmt
 fmt:
-	@gofumpt -w -l .
-	@goimports -w -l .
-	@golangci-lint run --fix
+	@go tool gofumpt -w -l .
+	@go tool goimports -w -l .
+	@go tool golangci-lint run --fix
 
 .PHONY: lint
 lint:
-	@golangci-lint run
+	@go tool golangci-lint run
 
 .PHONY: test
 test:
-	@gotestsum -f testdox
+	@go tool gotestsum -f testdox
 
 .PHONY: build
 build:
