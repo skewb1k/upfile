@@ -17,7 +17,7 @@ func pull() *cobra.Command {
 		Use:   "pull <filename>",
 		Short: "Pull file from origin",
 		Args:  cobra.ExactArgs(1),
-		RunE: withService(func(cmd *cobra.Command, s *service.Service, args []string) error {
+		RunE: wrap(func(cmd *cobra.Command, s *service.Service, args []string) error {
 			destAbs, err := filepath.Abs(dest)
 			if err != nil {
 				return fmt.Errorf("failed to get abs path to dest dir: %w", err)

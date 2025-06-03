@@ -40,6 +40,45 @@ func (m *MockUserFileProvider) EXPECT() *MockUserFileProviderMockRecorder {
 	return m.recorder
 }
 
+// CheckFile mocks base method.
+func (m *MockUserFileProvider) CheckFile(ctx context.Context, path string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckFile", ctx, path)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckFile indicates an expected call of CheckFile.
+func (mr *MockUserFileProviderMockRecorder) CheckFile(ctx, path any) *MockUserFileProviderCheckFileCall {
+	mr.mock.ctrl.T.Helper()
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckFile", reflect.TypeOf((*MockUserFileProvider)(nil).CheckFile), ctx, path)
+	return &MockUserFileProviderCheckFileCall{Call: call}
+}
+
+// MockUserFileProviderCheckFileCall wrap *gomock.Call
+type MockUserFileProviderCheckFileCall struct {
+	*gomock.Call
+}
+
+// Return rewrite *gomock.Call.Return
+func (c *MockUserFileProviderCheckFileCall) Return(arg0 bool, arg1 error) *MockUserFileProviderCheckFileCall {
+	c.Call = c.Call.Return(arg0, arg1)
+	return c
+}
+
+// Do rewrite *gomock.Call.Do
+func (c *MockUserFileProviderCheckFileCall) Do(f func(context.Context, string) (bool, error)) *MockUserFileProviderCheckFileCall {
+	c.Call = c.Call.Do(f)
+	return c
+}
+
+// DoAndReturn rewrite *gomock.Call.DoAndReturn
+func (c *MockUserFileProviderCheckFileCall) DoAndReturn(f func(context.Context, string) (bool, error)) *MockUserFileProviderCheckFileCall {
+	c.Call = c.Call.DoAndReturn(f)
+	return c
+}
+
 // ReadFile mocks base method.
 func (m *MockUserFileProvider) ReadFile(ctx context.Context, path string) (string, error) {
 	m.ctrl.T.Helper()

@@ -3,25 +3,20 @@ package service
 import (
 	"context"
 	"fmt"
-	"os"
 	"path/filepath"
 )
-
-func FileExistsAndReadable(path string) error {
-	f, err := os.Open(path)
-	if err != nil {
-		return err
-	}
-	_ = f.Close()
-	return nil
-}
 
 func (s Service) Remove(
 	ctx context.Context,
 	path string,
 ) error {
-	if err := FileExistsAndReadable(path); err != nil {
-		return err
+	exists, err := s.userfileProvider.CheckFile(ctx, path)
+	if err != nil {
+		return fmt.Errorf("check file: %w", err)
+	}
+
+	if !exists {
+		return ErrFileNotFound
 	}
 
 	fname := filepath.Base(path)

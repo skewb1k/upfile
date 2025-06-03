@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -18,7 +17,7 @@ func diff() *cobra.Command {
 		Use:   "diff <path>",
 		Short: "Diff with origin",
 		Args:  cobra.ExactArgs(1),
-		RunE: withService(func(cmd *cobra.Command, s *service.Service, args []string) error {
+		RunE: wrap(func(cmd *cobra.Command, s *service.Service, args []string) error {
 			path, err := filepath.Abs(args[0])
 			if err != nil {
 				return fmt.Errorf("get abs path to file: %w", err)
@@ -28,11 +27,6 @@ func diff() *cobra.Command {
 
 			upstreamContent, err := s.Diff(cmd.Context(), fname)
 			if err != nil {
-				if errors.Is(err, service.ErrNotTracked) {
-					cmd.PrintErrf("error: file %q not tracked\n", fname)
-					return nil
-				}
-
 				return err //nolint: wrapcheck
 			}
 

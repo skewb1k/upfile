@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func withService(f func(
+func wrap(f func(
 	cmd *cobra.Command,
 	s *service.Service,
 	args []string,

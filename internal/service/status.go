@@ -2,11 +2,11 @@ package service
 
 import (
 	"context"
-	"crypto/sha256"
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
+
+	"upfile/internal/userfile"
 )
 
 type EntryStatus int
@@ -33,31 +33,26 @@ func (s Service) Status(
 
 	res := make([]Entry, len(files))
 
-	for i, filename := range files {
+	for i, fname := range files {
 		res[i] = Entry{
-			Fname:  filename,
+			Fname:  fname,
 			Status: EntryStatusUpToDate,
 		}
 
-		upstream, err := s.indexProvider.GetUpstream(ctx, filename)
+		upstream, err := s.indexProvider.GetUpstream(ctx, fname)
 		if err != nil {
 			return nil, fmt.Errorf("get upstream: %w", err)
 		}
 
-		existing, err := os.ReadFile(filepath.Join(dir, filename))
+		existing, err := s.userfileProvider.ReadFile(ctx, filepath.Join(dir, fname))
 		if err != nil {
-			if !errors.Is(err, os.ErrNotExist) {
+			if !errors.Is(err, userfile.ErrNotFound) {
 				return nil, fmt.Errorf("read file: %w", err)
 			}
 
 			res[i].Status = EntryStatusDeleted
-		} else {
-			existingHash := sha256.Sum256(existing)
-			upstreamHash := sha256.Sum256([]byte(upstream))
-
-			if existingHash != upstreamHash {
-				res[i].Status = EntryStatusModified
-			}
+		} else if hash(existing) != hash(upstream) {
+			res[i].Status = EntryStatusModified
 		}
 	}
 

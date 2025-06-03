@@ -1,37 +1,33 @@
 package cmd
 
-//
-// import (
-// 	"fmt"
-// 	"path/filepath"
-//
-// 	indexFs "upfile/internal/index/fs"
-// 	"upfile/internal/service"
-//
-// 	"github.com/spf13/cobra"
-// )
-//
-// func remove() *cobra.Command {
-// 	return &cobra.Command{
-// 		Use:     "remove <path>",
-// 		Short:   "Remove entry from tracked list",
-// 		Aliases: []string{"rm"},
-// 		Args:    cobra.ExactArgs(1),
-// 		RunE: func(cmd *cobra.Command, args []string) error {
-// 			path, err := filepath.Abs(filepath.Clean(args[0]))
-// 			if err != nil {
-// 				return fmt.Errorf("get abs path to file: %w", err)
-// 			}
-//
-// 			s := service.New(indexFs.New(getBaseDir()))
-//
-// 			if err := s.Remove(cmd.Context(), path); err != nil {
-// 				return err
-// 			}
-//
-// 			cmd.Printf("Removed: %s\n", path)
-//
-// 			return nil
-// 		},
-// 	}
-// }
+import (
+	"fmt"
+	"path/filepath"
+
+	"upfile/internal/service"
+
+	"github.com/spf13/cobra"
+)
+
+func remove() *cobra.Command {
+	return &cobra.Command{
+		Use:     "remove <path>",
+		Short:   "Remove entry from tracked list",
+		Aliases: []string{"rm"},
+		Args:    cobra.ExactArgs(1),
+		RunE: wrap(func(cmd *cobra.Command, s *service.Service, args []string) error {
+			path, err := filepath.Abs(filepath.Clean(args[0]))
+			if err != nil {
+				return fmt.Errorf("failed to get abs path to file: %w", err)
+			}
+
+			if err := s.Remove(cmd.Context(), path); err != nil {
+				return err //nolint: wrapcheck
+			}
+
+			cmd.Printf("Removed: %s\n", path)
+
+			return nil
+		}),
+	}
+}

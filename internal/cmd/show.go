@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"errors"
 	"path/filepath"
 
 	"upfile/internal/service"
@@ -14,16 +13,11 @@ func show() *cobra.Command {
 		Use:   "show <filename>",
 		Short: "Show upstream version of file",
 		Args:  cobra.ExactArgs(1),
-		RunE: withService(func(cmd *cobra.Command, s *service.Service, args []string) error {
+		RunE: wrap(func(cmd *cobra.Command, s *service.Service, args []string) error {
 			fname := filepath.Base(args[0])
 
 			content, err := s.Show(cmd.Context(), fname)
 			if err != nil {
-				if errors.Is(err, service.ErrNotTracked) {
-					cmd.PrintErrf("error: file %q not tracked\n", fname)
-					return nil
-				}
-
 				return err //nolint: wrapcheck
 			}
 

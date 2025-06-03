@@ -40,3 +40,17 @@ func (p Provider) WriteFile(ctx context.Context, path string, content string) er
 
 	return nil
 }
+
+func (p Provider) CheckFile(ctx context.Context, path string) (bool, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return false, nil
+		}
+
+		return false, fmt.Errorf("open file: %w", err)
+	}
+
+	_ = f.Close()
+	return true, nil
+}
