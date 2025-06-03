@@ -9,13 +9,13 @@ import (
 	"upfile/internal/userfile"
 )
 
-type Store struct{}
+type Provider struct{}
 
-func New() *Store {
-	return &Store{}
+func New() *Provider {
+	return &Provider{}
 }
 
-func (s Store) ReadFile(ctx context.Context, path string) (string, error) {
+func (p Provider) ReadFile(ctx context.Context, path string) (string, error) {
 	content, err := os.ReadFile(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {

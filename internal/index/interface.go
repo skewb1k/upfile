@@ -4,9 +4,9 @@ import (
 	"context"
 )
 
-//go:generate go tool mockgen -typed -package index -destination ./store_mock.go . Store
+//go:generate go tool mockgen -typed -package index -destination ./mock.go . IndexProvider
 
-type Store interface {
+type IndexProvider interface {
 	GetFiles(ctx context.Context) ([]string, error)
 	GetFilesByEntryDir(ctx context.Context, entryDir string) ([]string, error)
 

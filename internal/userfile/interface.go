@@ -4,8 +4,8 @@ import (
 	"context"
 )
 
-//go:generate go tool mockgen -typed -package userfile -destination ./store_mock.go . Store
+//go:generate go tool mockgen -typed -package userfile -destination ./mock.go . UserFileProvider
 
-type Store interface {
+type UserFileProvider interface {
 	ReadFile(ctx context.Context, path string) (string, error)
 }

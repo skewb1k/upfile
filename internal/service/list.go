@@ -13,7 +13,7 @@ type File struct {
 func (s Service) List(
 	ctx context.Context,
 ) ([]File, error) {
-	files, err := s.indexStore.GetFiles(ctx)
+	files, err := s.indexProvider.GetFiles(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("get files: %w", err)
 	}
@@ -21,7 +21,7 @@ func (s Service) List(
 	res := make([]File, len(files))
 
 	for i, fname := range files {
-		entries, err := s.indexStore.GetEntriesByFname(ctx, fname)
+		entries, err := s.indexProvider.GetEntriesByFname(ctx, fname)
 		if err != nil {
 			return nil, fmt.Errorf("get entries by filename: %w", err)
 		}

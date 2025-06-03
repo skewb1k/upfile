@@ -6,16 +6,16 @@ import (
 )
 
 type Service struct {
-	indexStore    index.Store
-	userfileStore userfile.Store
+	indexProvider    index.IndexProvider
+	userfileProvider userfile.UserFileProvider
 }
 
 func New(
-	indexStore index.Store,
-	userfileStore userfile.Store,
+	indexProvider index.IndexProvider,
+	userfileProvider userfile.UserFileProvider,
 ) *Service {
 	return &Service{
-		indexStore:    indexStore,
-		userfileStore: userfileStore,
+		indexProvider:    indexProvider,
+		userfileProvider: userfileProvider,
 	}
 }

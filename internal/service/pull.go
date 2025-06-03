@@ -16,7 +16,7 @@ func (s Service) Pull(
 	fname string,
 	destDir string,
 ) (bool, error) {
-	content, err := s.indexStore.GetUpstream(ctx, fname)
+	content, err := s.indexProvider.GetUpstream(ctx, fname)
 	if err != nil {
 		return false, fmt.Errorf("get upstream: %w", err)
 	}
@@ -34,7 +34,7 @@ func (s Service) Pull(
 		}
 	}
 
-	if err := s.indexStore.CreateEntry(ctx, fname, destDir); err != nil {
+	if err := s.indexProvider.CreateEntry(ctx, fname, destDir); err != nil {
 		if !errors.Is(err, index.ErrExists) {
 			return false, fmt.Errorf("create entry: %w", err)
 		}

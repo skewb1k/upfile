@@ -20,7 +20,7 @@ func (s Service) Push(
 		return fmt.Errorf("read file: %w", err)
 	}
 
-	current, err := s.indexStore.GetUpstream(ctx, fname)
+	current, err := s.indexProvider.GetUpstream(ctx, fname)
 	if err != nil {
 		return fmt.Errorf("get upstream: %w", err)
 	}
@@ -29,7 +29,7 @@ func (s Service) Push(
 		return ErrUpToDate
 	}
 
-	if err := s.indexStore.SetUpstream(ctx, fname, string(content)); err != nil {
+	if err := s.indexProvider.SetUpstream(ctx, fname, string(content)); err != nil {
 		return fmt.Errorf("set upstream: %w", err)
 	}
 
