@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"errors"
 	"io"
 	"os/exec"
@@ -37,17 +36,15 @@ func Main(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) in
 	rootCmd.AddCommand(version())
 	rootCmd.AddCommand(add())
 	// rootCmd.AddCommand(remove())
-	// rootCmd.AddCommand(diff())
-	// rootCmd.AddCommand(show())
+	rootCmd.AddCommand(diff())
+	rootCmd.AddCommand(show())
 	// rootCmd.AddCommand(list())
 	// rootCmd.AddCommand(status())
-	// rootCmd.AddCommand(pull())
-	// rootCmd.AddCommand(push())
+	rootCmd.AddCommand(pull())
+	rootCmd.AddCommand(push())
 	// rootCmd.AddCommand(sync())
 
-	ctx := context.Background()
-
-	if err := rootCmd.ExecuteContext(ctx); err != nil {
+	if err := rootCmd.Execute(); err != nil {
 		var exitError *exec.ExitError
 		if errors.As(err, &exitError) {
 			return exitError.ExitCode()

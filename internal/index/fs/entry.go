@@ -56,11 +56,11 @@ func (p Provider) CreateEntry(
 	encoded := encodePath([]byte(entryDir))
 
 	byDirPath := p.getPathToEntriesByDir(encoded)
-	if err := os.MkdirAll(byDirPath, 0o755); err != nil {
+	if err := os.MkdirAll(byDirPath, 0o700); err != nil {
 		return fmt.Errorf("mkdir by-dir path: %w", err)
 	}
 
-	byDirFile, err := os.OpenFile(filepath.Join(byDirPath, fname), os.O_CREATE|os.O_EXCL, 0o644)
+	byDirFile, err := os.OpenFile(filepath.Join(byDirPath, fname), os.O_CREATE|os.O_EXCL, 0o600)
 	if err != nil {
 		if errors.Is(err, os.ErrExist) {
 			return index.ErrExists
@@ -72,11 +72,11 @@ func (p Provider) CreateEntry(
 
 	byNameDir := p.getPathToEntriesByFname(fname)
 
-	if err := os.MkdirAll(byNameDir, 0o755); err != nil {
+	if err := os.MkdirAll(byNameDir, 0o700); err != nil {
 		return fmt.Errorf("mkdir by-name dir: %w", err)
 	}
 
-	byNameFile, err := os.OpenFile(filepath.Join(byNameDir, encoded), os.O_CREATE|os.O_EXCL, 0o644)
+	byNameFile, err := os.OpenFile(filepath.Join(byNameDir, encoded), os.O_CREATE|os.O_EXCL, 0o600)
 	if err != nil {
 		if errors.Is(err, os.ErrExist) {
 			return index.ErrExists

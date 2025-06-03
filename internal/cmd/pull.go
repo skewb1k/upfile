@@ -1,43 +1,44 @@
 package cmd
 
-// import (
-// 	"fmt"
-// 	"path/filepath"
-//
-// 	indexFs "upfile/internal/index/fs"
-// 	"upfile/internal/service"
-//
-// 	"github.com/spf13/cobra"
-// )
-//
-// func pull() *cobra.Command {
-// 	var dest string
-//
-// 	cmd := &cobra.Command{
-// 		Use:   "pull <filename>",
-// 		Short: "Pull file from origin",
-// 		Args:  cobra.ExactArgs(1),
-// 		RunE: func(cmd *cobra.Command, args []string) error {
-// 			d, err := filepath.Abs(dest)
-// 			if err != nil {
-// 				return fmt.Errorf("get abs path to dest dir: %w", err)
-// 			}
-//
-// 			s := service.New(indexFs.New(getBaseDir()))
-// 			pulled, err := s.Pull(cmd.Context(), filepath.Base(args[0]), d)
-// 			if err != nil {
-// 				return err
-// 			}
-//
-// 			if !pulled {
-// 				cmd.Println("Already up to date.")
-// 			}
-//
-// 			return nil
-// 		},
-// 	}
-//
-// 	cmd.Flags().StringVarP(&dest, "dest", "d", ".", "Destination folder")
-//
-// 	return cmd
-// }
+import (
+	"errors"
+	"fmt"
+	"path/filepath"
+
+	"upfile/internal/service"
+
+	"github.com/spf13/cobra"
+)
+
+func pull() *cobra.Command {
+	var dest string
+
+	cmd := &cobra.Command{
+		Use:   "pull <filename>",
+		Short: "Pull file from origin",
+		Args:  cobra.ExactArgs(1),
+		RunE: withService(func(cmd *cobra.Command, s *service.Service, args []string) error {
+			destAbs, err := filepath.Abs(dest)
+			if err != nil {
+				return fmt.Errorf("failed to get abs path to dest dir: %w", err)
+			}
+
+			fname := filepath.Base(args[0])
+
+			if err := s.Pull(cmd.Context(), fname, destAbs); err != nil {
+				if errors.Is(err, service.ErrUpToDate) {
+					cmd.Println("File up-to-date")
+					return nil
+				}
+
+				return err //nolint: wrapcheck
+			}
+
+			return nil
+		}),
+	}
+
+	cmd.Flags().StringVarP(&dest, "dest", "d", ".", "Destination folder")
+
+	return cmd
+}

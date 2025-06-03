@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"path/filepath"
 
@@ -14,14 +15,24 @@ func add() *cobra.Command {
 		Use:   "add <path>",
 		Short: "Add a file to be tracked",
 		Args:  cobra.ExactArgs(1),
-		RunE: withService(func(cmd *cobra.Command, args []string, s *service.Service) error {
-			path, err := filepath.Abs(filepath.Clean(args[0]))
+		RunE: withService(func(cmd *cobra.Command, s *service.Service, args []string) error {
+			path, err := filepath.Abs(args[0])
 			if err != nil {
-				return fmt.Errorf("get abs path to file: %w", err)
+				return fmt.Errorf("failed to get abs path to file: %w", err)
 			}
 
 			if err := s.Add(cmd.Context(), path); err != nil {
-				return err
+				if errors.Is(err, service.ErrAlreadyTracked) {
+					cmd.PrintErrf("error: file %q already tracked\n", path)
+					return nil
+				}
+
+				if errors.Is(err, service.ErrFileNotFound) {
+					cmd.PrintErrf("error: file %q not found\n", path)
+					return nil
+				}
+
+				return err //nolint: wrapcheck
 			}
 
 			cmd.Printf("Added: %s\n", path)

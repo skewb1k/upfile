@@ -4,49 +4,44 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
-	"slices"
 
 	"upfile/internal/index"
+	"upfile/internal/userfile"
 )
 
 func (s Service) Pull(
 	ctx context.Context,
 	fname string,
 	destDir string,
-) (bool, error) {
+) error {
 	content, err := s.indexProvider.GetUpstream(ctx, fname)
 	if err != nil {
-		return false, fmt.Errorf("get upstream: %w", err)
+		return fmt.Errorf("get upstream: %w", err)
 	}
 
-	destPath := filepath.Join(destDir, fname)
+	path := filepath.Join(destDir, fname)
 
-	existing, err := os.ReadFile(destPath)
+	existing, err := s.userfileProvider.ReadFile(ctx, path)
 	if err != nil {
-		if !errors.Is(err, os.ErrNotExist) {
-			return false, fmt.Errorf("check existing file: %w", err)
+		if !errors.Is(err, userfile.ErrNotFound) {
+			return fmt.Errorf("check existing file: %w", err)
 		}
 	} else {
-		if slices.Equal(existing, []byte(content)) {
-			return false, nil
+		if hash(content) == hash(existing) {
+			return ErrUpToDate
 		}
 	}
 
 	if err := s.indexProvider.CreateEntry(ctx, fname, destDir); err != nil {
 		if !errors.Is(err, index.ErrExists) {
-			return false, fmt.Errorf("create entry: %w", err)
+			return fmt.Errorf("create entry: %w", err)
 		}
 	}
 
-	if err := os.MkdirAll(destDir, 0o755); err != nil {
-		return false, fmt.Errorf("create parent dirs: %w", err)
+	if err := s.userfileProvider.WriteFile(ctx, path, content); err != nil {
+		return fmt.Errorf("write file: %w", err)
 	}
 
-	if err := os.WriteFile(destPath, []byte(content), 0o644); err != nil {
-		return false, fmt.Errorf("write file: %w", err)
-	}
-
-	return true, nil
+	return nil
 }

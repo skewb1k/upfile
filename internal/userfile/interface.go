@@ -8,4 +8,5 @@ import (
 
 type UserFileProvider interface {
 	ReadFile(ctx context.Context, path string) (string, error)
+	WriteFile(ctx context.Context, path string, content string) error
 }

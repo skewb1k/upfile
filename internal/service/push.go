@@ -3,33 +3,27 @@ package service
 import (
 	"context"
 	"fmt"
-	"os"
 	"path/filepath"
-	"slices"
 )
 
-func (s Service) Push(
-	ctx context.Context,
-	path string,
-) error {
-	fname := filepath.Base(path)
-	// entryDir := filepath.Dir(path)
-
-	content, err := os.ReadFile(path)
+func (s Service) Push(ctx context.Context, path string) error {
+	content, err := s.userfileProvider.ReadFile(ctx, path)
 	if err != nil {
 		return fmt.Errorf("read file: %w", err)
 	}
+
+	fname := filepath.Base(path)
 
 	current, err := s.indexProvider.GetUpstream(ctx, fname)
 	if err != nil {
 		return fmt.Errorf("get upstream: %w", err)
 	}
 
-	if slices.Equal(content, []byte(current)) {
+	if hash(content) == hash(current) {
 		return ErrUpToDate
 	}
 
-	if err := s.indexProvider.SetUpstream(ctx, fname, string(content)); err != nil {
+	if err := s.indexProvider.SetUpstream(ctx, fname, content); err != nil {
 		return fmt.Errorf("set upstream: %w", err)
 	}
 

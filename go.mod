@@ -2,7 +2,9 @@ module upfile
 
 go 1.24.3
 
-tool go.uber.org/mock/mockgen
+tool (
+	go.uber.org/mock/mockgen
+)
 
 require (
 	github.com/adrg/xdg v0.5.3

@@ -2,26 +2,34 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"path/filepath"
+
+	"upfile/internal/index"
+	"upfile/internal/userfile"
 )
 
 func (s Service) Add(
 	ctx context.Context,
 	path string,
 ) error {
+	content, err := s.userfileProvider.ReadFile(ctx, path)
+	if err != nil {
+		if errors.Is(err, userfile.ErrNotFound) {
+			return ErrFileNotFound
+		}
+
+		return fmt.Errorf("read file: %w", err)
+	}
+
 	fname, entryDir := filepath.Base(path), filepath.Dir(path)
 
-	entryExists, err := s.indexProvider.CheckEntry(ctx, fname, entryDir)
-	if err != nil {
-		return fmt.Errorf("get entry: %w", err)
-	}
-
-	if entryExists {
-		return ErrAlreadyTracked
-	}
-
 	if err := s.indexProvider.CreateEntry(ctx, fname, entryDir); err != nil {
+		if errors.Is(err, index.ErrExists) {
+			return ErrAlreadyTracked
+		}
+
 		return fmt.Errorf("create entry: %w", err)
 	}
 
@@ -31,12 +39,6 @@ func (s Service) Add(
 	}
 
 	if !upstreamExists {
-		content, err := s.userfileProvider.ReadFile(ctx, path)
-		if err != nil {
-			// TODO: handle not found error
-			return fmt.Errorf("read file: %w", err)
-		}
-
 		if err := s.indexProvider.SetUpstream(ctx, fname, content); err != nil {
 			return fmt.Errorf("set upstream: %w", err)
 		}

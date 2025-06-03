@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"upfile/internal/userfile"
 )
@@ -26,4 +27,16 @@ func (p Provider) ReadFile(ctx context.Context, path string) (string, error) {
 	}
 
 	return string(content), nil
+}
+
+func (p Provider) WriteFile(ctx context.Context, path string, content string) error {
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		return fmt.Errorf("create parent dirs: %w", err)
+	}
+
+	if err := os.WriteFile(path, []byte(content), 0o600); err != nil {
+		return fmt.Errorf("write file: %w", err)
+	}
+
+	return nil
 }

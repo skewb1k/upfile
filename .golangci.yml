@@ -57,7 +57,7 @@ linters:
     - noctx
     - nonamedreturns
     - nosprintfhostport
-    # - paralleltest
+    - paralleltest
     - perfsprint
     - prealloc
     - predeclared
@@ -95,9 +95,9 @@ linters:
     gosec:
       excludes:
         - G104
+        - G204
         - G301
         - G304
-        - G306
     revive:
       rules:
         - name: blank-imports

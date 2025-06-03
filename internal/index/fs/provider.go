@@ -42,11 +42,11 @@ func (p Provider) GetFiles(ctx context.Context) ([]string, error) {
 
 func (p Provider) SetUpstream(ctx context.Context, fname string, value string) error {
 	versionsDir := filepath.Join(p.BaseDir, versionsDirname)
-	if err := os.MkdirAll(versionsDir, 0o755); err != nil {
+	if err := os.MkdirAll(versionsDir, 0o700); err != nil {
 		return fmt.Errorf("create versions dir: %w", err)
 	}
 
-	if err := os.WriteFile(filepath.Join(versionsDir, fname), []byte(value), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(versionsDir, fname), []byte(value), 0o600); err != nil {
 		return fmt.Errorf("write file: %w", err)
 	}
 

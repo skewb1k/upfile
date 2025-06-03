@@ -15,11 +15,12 @@ import (
 var errAny = errors.New("ANY")
 
 func TestAdd(t *testing.T) {
+	t.Parallel()
 	type testCase struct {
-		name          string
-		path          string
-		setupMocks    func(indexProvider *index.MockIndexProvider, userfileProvider *userfile.MockUserFileProvider)
-		expectedError error
+		name        string
+		path        string
+		setupMocks  func(indexProvider *index.MockIndexProvider, userfileProvider *userfile.MockUserFileProvider)
+		expectedErr error
 	}
 
 	cases := []testCase{
@@ -27,10 +28,9 @@ func TestAdd(t *testing.T) {
 			name: "successfully adds and sets upstream",
 			path: "some/dir/file.txt",
 			setupMocks: func(idx *index.MockIndexProvider, usr *userfile.MockUserFileProvider) {
-				idx.EXPECT().CheckEntry(t.Context(), "file.txt", "some/dir").Return(false, nil)
+				usr.EXPECT().ReadFile(t.Context(), "some/dir/file.txt").Return("file content", nil)
 				idx.EXPECT().CreateEntry(t.Context(), "file.txt", "some/dir").Return(nil)
 				idx.EXPECT().CheckUpstream(t.Context(), "file.txt").Return(false, nil)
-				usr.EXPECT().ReadFile(t.Context(), "some/dir/file.txt").Return("file content", nil)
 				idx.EXPECT().SetUpstream(t.Context(), "file.txt", "file content").Return(nil)
 			},
 		},
@@ -38,23 +38,33 @@ func TestAdd(t *testing.T) {
 			name: "entry already exists",
 			path: "some/dir/file.txt",
 			setupMocks: func(idx *index.MockIndexProvider, usr *userfile.MockUserFileProvider) {
-				idx.EXPECT().CheckEntry(t.Context(), "file.txt", "some/dir").Return(true, nil)
+				usr.EXPECT().ReadFile(t.Context(), "some/dir/file.txt").Return("file content", nil)
+				idx.EXPECT().CreateEntry(t.Context(), "file.txt", "some/dir").Return(index.ErrExists)
 			},
-			expectedError: service.ErrAlreadyTracked,
+			expectedErr: service.ErrAlreadyTracked,
 		},
 		{
 			name: "check entry fails",
 			path: "some/dir/file.txt",
 			setupMocks: func(idx *index.MockIndexProvider, usr *userfile.MockUserFileProvider) {
-				idx.EXPECT().CheckEntry(t.Context(), "file.txt", "some/dir").Return(false, errors.New("no permissions"))
+				usr.EXPECT().ReadFile(t.Context(), "some/dir/file.txt").Return("file content", nil)
+				idx.EXPECT().CreateEntry(t.Context(), "file.txt", "some/dir").Return(errors.New("no permissions"))
 			},
-			expectedError: errAny,
+			expectedErr: errAny,
+		},
+		{
+			name: "input file does not exists",
+			path: "some/dir/file.txt",
+			setupMocks: func(idx *index.MockIndexProvider, usr *userfile.MockUserFileProvider) {
+				usr.EXPECT().ReadFile(t.Context(), "some/dir/file.txt").Return("", userfile.ErrNotFound)
+			},
+			expectedErr: service.ErrFileNotFound,
 		},
 		{
 			name: "upstream already exists, no read or write",
 			path: "some/dir/file.txt",
 			setupMocks: func(idx *index.MockIndexProvider, usr *userfile.MockUserFileProvider) {
-				idx.EXPECT().CheckEntry(t.Context(), "file.txt", "some/dir").Return(false, nil)
+				usr.EXPECT().ReadFile(t.Context(), "some/dir/file.txt").Return("file content", nil)
 				idx.EXPECT().CreateEntry(t.Context(), "file.txt", "some/dir").Return(nil)
 				idx.EXPECT().CheckUpstream(t.Context(), "file.txt").Return(true, nil)
 			},
@@ -63,6 +73,8 @@ func TestAdd(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -73,11 +85,11 @@ func TestAdd(t *testing.T) {
 			s := service.New(idx, usr)
 			err := s.Add(t.Context(), tc.path)
 
-			if tc.expectedError != nil {
-				if errors.Is(tc.expectedError, errAny) {
+			if tc.expectedErr != nil {
+				if errors.Is(tc.expectedErr, errAny) {
 					require.Error(t, err)
 				} else {
-					require.ErrorIs(t, err, tc.expectedError)
+					require.ErrorIs(t, err, tc.expectedErr)
 				}
 			} else {
 				require.NoError(t, err)

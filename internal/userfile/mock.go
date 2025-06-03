@@ -78,3 +78,41 @@ func (c *MockUserFileProviderReadFileCall) DoAndReturn(f func(context.Context, s
 	c.Call = c.Call.DoAndReturn(f)
 	return c
 }
+
+// WriteFile mocks base method.
+func (m *MockUserFileProvider) WriteFile(ctx context.Context, path, content string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WriteFile", ctx, path, content)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// WriteFile indicates an expected call of WriteFile.
+func (mr *MockUserFileProviderMockRecorder) WriteFile(ctx, path, content any) *MockUserFileProviderWriteFileCall {
+	mr.mock.ctrl.T.Helper()
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteFile", reflect.TypeOf((*MockUserFileProvider)(nil).WriteFile), ctx, path, content)
+	return &MockUserFileProviderWriteFileCall{Call: call}
+}
+
+// MockUserFileProviderWriteFileCall wrap *gomock.Call
+type MockUserFileProviderWriteFileCall struct {
+	*gomock.Call
+}
+
+// Return rewrite *gomock.Call.Return
+func (c *MockUserFileProviderWriteFileCall) Return(arg0 error) *MockUserFileProviderWriteFileCall {
+	c.Call = c.Call.Return(arg0)
+	return c
+}
+
+// Do rewrite *gomock.Call.Do
+func (c *MockUserFileProviderWriteFileCall) Do(f func(context.Context, string, string) error) *MockUserFileProviderWriteFileCall {
+	c.Call = c.Call.Do(f)
+	return c
+}
+
+// DoAndReturn rewrite *gomock.Call.DoAndReturn
+func (c *MockUserFileProviderWriteFileCall) DoAndReturn(f func(context.Context, string, string) error) *MockUserFileProviderWriteFileCall {
+	c.Call = c.Call.DoAndReturn(f)
+	return c
+}

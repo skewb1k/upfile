@@ -13,11 +13,11 @@ import (
 
 func withService(f func(
 	cmd *cobra.Command,
-	args []string,
 	s *service.Service,
+	args []string,
 ) error,
 ) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
-		return f(cmd, args, service.New(indexFs.New(filepath.Join(xdg.DataHome, Name)), userfileFs.New()))
+		return f(cmd, service.New(indexFs.New(filepath.Join(xdg.DataHome, Name)), userfileFs.New()), args)
 	}
 }
