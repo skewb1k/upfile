@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+	"io"
 	"path/filepath"
 
 	indexFs "upfile/internal/index/fs"
@@ -8,6 +10,7 @@ import (
 	userfileFs "upfile/internal/userfile/fs"
 
 	"github.com/adrg/xdg"
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
@@ -19,5 +22,30 @@ func wrap(f func(
 ) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		return f(cmd, service.New(indexFs.New(filepath.Join(xdg.DataHome, Name)), userfileFs.New()), args)
+	}
+}
+
+func mustFprintf(w io.Writer, format string, a ...any) {
+	if _, err := fmt.Fprintf(w, format, a...); err != nil {
+		panic(err)
+	}
+}
+
+var (
+	green  = color.New(color.FgGreen).SprintFunc()
+	yellow = color.New(color.FgYellow).SprintFunc()
+	red    = color.New(color.FgRed).SprintFunc()
+)
+
+func statusAsString(status service.EntryStatus) string {
+	switch status {
+	case service.EntryStatusModified:
+		return yellow("Modified")
+	case service.EntryStatusUpToDate:
+		return green("Up-to-date")
+	case service.EntryStatusDeleted:
+		return red("Deleted")
+	default:
+		panic("UNEXPECTED")
 	}
 }

@@ -194,6 +194,44 @@ func (c *MockIndexProviderDeleteEntryCall) DoAndReturn(f func(context.Context, s
 	return c
 }
 
+// DeleteUpstream mocks base method.
+func (m *MockIndexProvider) DeleteUpstream(ctx context.Context, fname string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteUpstream", ctx, fname)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteUpstream indicates an expected call of DeleteUpstream.
+func (mr *MockIndexProviderMockRecorder) DeleteUpstream(ctx, fname any) *MockIndexProviderDeleteUpstreamCall {
+	mr.mock.ctrl.T.Helper()
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUpstream", reflect.TypeOf((*MockIndexProvider)(nil).DeleteUpstream), ctx, fname)
+	return &MockIndexProviderDeleteUpstreamCall{Call: call}
+}
+
+// MockIndexProviderDeleteUpstreamCall wrap *gomock.Call
+type MockIndexProviderDeleteUpstreamCall struct {
+	*gomock.Call
+}
+
+// Return rewrite *gomock.Call.Return
+func (c *MockIndexProviderDeleteUpstreamCall) Return(arg0 error) *MockIndexProviderDeleteUpstreamCall {
+	c.Call = c.Call.Return(arg0)
+	return c
+}
+
+// Do rewrite *gomock.Call.Do
+func (c *MockIndexProviderDeleteUpstreamCall) Do(f func(context.Context, string) error) *MockIndexProviderDeleteUpstreamCall {
+	c.Call = c.Call.Do(f)
+	return c
+}
+
+// DoAndReturn rewrite *gomock.Call.DoAndReturn
+func (c *MockIndexProviderDeleteUpstreamCall) DoAndReturn(f func(context.Context, string) error) *MockIndexProviderDeleteUpstreamCall {
+	c.Call = c.Call.DoAndReturn(f)
+	return c
+}
+
 // GetEntriesByFname mocks base method.
 func (m *MockIndexProvider) GetEntriesByFname(ctx context.Context, fname string) ([]string, error) {
 	m.ctrl.T.Helper()

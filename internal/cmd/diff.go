@@ -20,7 +20,7 @@ func diff() *cobra.Command {
 		RunE: wrap(func(cmd *cobra.Command, s *service.Service, args []string) error {
 			path, err := filepath.Abs(args[0])
 			if err != nil {
-				return fmt.Errorf("get abs path to file: %w", err)
+				return fmt.Errorf("failed to get abs path to file: %w", err)
 			}
 
 			fname := filepath.Base(path)

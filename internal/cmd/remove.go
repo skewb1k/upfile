@@ -16,7 +16,7 @@ func remove() *cobra.Command {
 		Aliases: []string{"rm"},
 		Args:    cobra.ExactArgs(1),
 		RunE: wrap(func(cmd *cobra.Command, s *service.Service, args []string) error {
-			path, err := filepath.Abs(filepath.Clean(args[0]))
+			path, err := filepath.Abs(args[0])
 			if err != nil {
 				return fmt.Errorf("failed to get abs path to file: %w", err)
 			}

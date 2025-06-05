@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
+	"path/filepath"
 
 	"upfile/internal/service"
 
@@ -14,9 +16,14 @@ func push() *cobra.Command {
 		Short: "Push file to the upstream",
 		Args:  cobra.ExactArgs(1),
 		RunE: wrap(func(cmd *cobra.Command, s *service.Service, args []string) error {
-			if err := s.Push(cmd.Context(), args[0]); err != nil {
+			path, err := filepath.Abs(args[0])
+			if err != nil {
+				return fmt.Errorf("failed to get abs path to file: %w", err)
+			}
+
+			if err := s.Push(cmd.Context(), path); err != nil {
 				if errors.Is(err, service.ErrUpToDate) {
-					cmd.Println("Already up to date")
+					cmd.Println("File up-to-date")
 					return nil
 				}
 

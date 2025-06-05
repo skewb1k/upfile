@@ -3,17 +3,11 @@ package cmd
 import (
 	"fmt"
 	"path/filepath"
+	"text/tabwriter"
 
 	"upfile/internal/service"
 
-	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-)
-
-var (
-	green  = color.New(color.FgGreen).SprintFunc()
-	yellow = color.New(color.FgYellow).SprintFunc()
-	red    = color.New(color.FgRed).SprintFunc()
 )
 
 func status() *cobra.Command {
@@ -32,24 +26,16 @@ func status() *cobra.Command {
 				return fmt.Errorf("failed to get abs path to dir: %w", err)
 			}
 
-			res, err := s.Status(cmd.Context(), absDir)
+			entries, err := s.Status(cmd.Context(), absDir)
 			if err != nil {
 				return err //nolint: wrapcheck
 			}
 
-			for _, e := range res {
-				var status string
+			w := tabwriter.NewWriter(cmd.OutOrStdout(), 0, 0, 2, ' ', 0)
+			defer w.Flush()
 
-				switch e.Status {
-				case service.EntryStatusModified:
-					status = yellow("Modified")
-				case service.EntryStatusUpToDate:
-					status = green("Up to date")
-				case service.EntryStatusDeleted:
-					status = red("Deleted")
-				}
-
-				cmd.Printf("%-40s %s\n", e.Fname, status)
+			for _, entry := range entries {
+				mustFprintf(w, "%s\t%s\n", filepath.Base(entry.Path), statusAsString(entry.Status))
 			}
 
 			return nil

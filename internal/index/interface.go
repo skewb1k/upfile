@@ -17,5 +17,6 @@ type IndexProvider interface {
 
 	SetUpstream(ctx context.Context, fname string, value string) error
 	GetUpstream(ctx context.Context, fname string) (string, error)
+	DeleteUpstream(ctx context.Context, fname string) error
 	CheckUpstream(ctx context.Context, fname string) (bool, error)
 }

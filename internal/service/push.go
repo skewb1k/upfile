@@ -7,12 +7,21 @@ import (
 )
 
 func (s Service) Push(ctx context.Context, path string) error {
+	fname, entryDir := filepath.Base(path), filepath.Dir(path)
+
+	exists, err := s.indexProvider.CheckEntry(ctx, fname, entryDir)
+	if err != nil {
+		return fmt.Errorf("check entry: %w", err)
+	}
+
+	if !exists {
+		return ErrNotTracked
+	}
+
 	content, err := s.userfileProvider.ReadFile(ctx, path)
 	if err != nil {
 		return fmt.Errorf("read file: %w", err)
 	}
-
-	fname := filepath.Base(path)
 
 	current, err := s.indexProvider.GetUpstream(ctx, fname)
 	if err != nil {

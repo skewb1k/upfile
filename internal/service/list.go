@@ -2,12 +2,16 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"path/filepath"
+
+	"upfile/internal/userfile"
 )
 
 type File struct {
 	Fname   string
-	Entries []string
+	Entries []Entry
 }
 
 func (s Service) List(
@@ -26,9 +30,35 @@ func (s Service) List(
 			return nil, fmt.Errorf("get entries by filename: %w", err)
 		}
 
+		upstream, err := s.indexProvider.GetUpstream(ctx, fname)
+		if err != nil {
+			return nil, fmt.Errorf("get upstream: %w", err)
+		}
+
+		e := make([]Entry, len(entries))
+
+		for j, entry := range entries {
+			path := filepath.Join(entry, fname)
+			e[j] = Entry{
+				Path:   path,
+				Status: EntryStatusUpToDate,
+			}
+
+			existing, err := s.userfileProvider.ReadFile(ctx, path)
+			if err != nil {
+				if !errors.Is(err, userfile.ErrNotFound) {
+					return nil, fmt.Errorf("read file: %w", err)
+				}
+
+				e[j].Status = EntryStatusDeleted
+			} else if hash(existing) != hash(upstream) {
+				e[j].Status = EntryStatusModified
+			}
+		}
+
 		res[i] = File{
 			Fname:   fname,
-			Entries: entries,
+			Entries: e,
 		}
 	}
 

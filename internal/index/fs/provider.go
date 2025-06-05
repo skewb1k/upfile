@@ -42,6 +42,7 @@ func (p Provider) GetFiles(ctx context.Context) ([]string, error) {
 
 func (p Provider) SetUpstream(ctx context.Context, fname string, value string) error {
 	versionsDir := filepath.Join(p.BaseDir, versionsDirname)
+
 	if err := os.MkdirAll(versionsDir, 0o700); err != nil {
 		return fmt.Errorf("create versions dir: %w", err)
 	}
@@ -76,4 +77,18 @@ func (p Provider) CheckUpstream(ctx context.Context, fname string) (bool, error)
 	}
 
 	return true, nil
+}
+
+func (p Provider) DeleteUpstream(ctx context.Context, fname string) error {
+	path := filepath.Join(p.BaseDir, versionsDirname, fname)
+
+	if err := os.Remove(path); err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return index.ErrNotFound
+		}
+
+		return fmt.Errorf("delete file: %w", err)
+	}
+
+	return nil
 }

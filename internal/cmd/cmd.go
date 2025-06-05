@@ -47,6 +47,7 @@ func Main(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) in
 	rootCmd.AddCommand(pull())
 	rootCmd.AddCommand(push())
 	rootCmd.AddCommand(sync())
+	rootCmd.AddCommand(drop())
 
 	if err := rootCmd.Execute(); err != nil {
 		var exitError *exec.ExitError

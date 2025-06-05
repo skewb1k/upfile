@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"text/tabwriter"
+
 	"upfile/internal/service"
 
 	"github.com/spf13/cobra"
@@ -22,12 +24,19 @@ func list() *cobra.Command {
 				return nil
 			}
 
-			for _, f := range files {
-				cmd.Println(f.Fname)
-				for _, dir := range f.Entries {
-					cmd.Printf("  %s\n", dir)
+			w := tabwriter.NewWriter(cmd.OutOrStdout(), 0, 0, 2, ' ', 0)
+			defer w.Flush()
+
+			for i, f := range files {
+				mustFprintf(w, "%s:\n", f.Fname)
+
+				for _, entry := range f.Entries {
+					mustFprintf(w, "\t%s\t%s\n", entry.Path, statusAsString(entry.Status))
 				}
-				cmd.Println()
+
+				if i < len(files)-1 {
+					mustFprintf(w, "\n")
+				}
 			}
 
 			return nil

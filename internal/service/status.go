@@ -18,7 +18,7 @@ const (
 )
 
 type Entry struct {
-	Fname  string
+	Path   string
 	Status EntryStatus
 }
 
@@ -34,8 +34,9 @@ func (s Service) Status(
 	res := make([]Entry, len(files))
 
 	for i, fname := range files {
+		path := filepath.Join(dir, fname)
 		res[i] = Entry{
-			Fname:  fname,
+			Path:   path,
 			Status: EntryStatusUpToDate,
 		}
 
@@ -44,7 +45,7 @@ func (s Service) Status(
 			return nil, fmt.Errorf("get upstream: %w", err)
 		}
 
-		existing, err := s.userfileProvider.ReadFile(ctx, filepath.Join(dir, fname))
+		existing, err := s.userfileProvider.ReadFile(ctx, path)
 		if err != nil {
 			if !errors.Is(err, userfile.ErrNotFound) {
 				return nil, fmt.Errorf("read file: %w", err)
