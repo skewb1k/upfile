@@ -19,7 +19,7 @@ func drop() *cobra.Command {
 			fname := filepath.Base(args[0])
 
 			confirm := func(entries []string) bool {
-				fmt.Println("The following tracked paths will be deleted:")
+				fmt.Println("The following tracked files will be deleted:")
 				for _, e := range entries {
 					fmt.Println(" -", e)
 				}

@@ -2,8 +2,11 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"path/filepath"
+
+	"upfile/internal/index"
 )
 
 func (s Service) Remove(
@@ -23,6 +26,10 @@ func (s Service) Remove(
 	entryDir := filepath.Dir(path)
 
 	if err := s.indexProvider.DeleteEntry(ctx, fname, entryDir); err != nil {
+		if errors.Is(err, index.ErrNotFound) {
+			return ErrNotTracked
+		}
+
 		return fmt.Errorf("delete entry: %w", err)
 	}
 

@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"io"
+	"os"
 	"path/filepath"
 
 	indexFs "upfile/internal/index/fs"
@@ -21,7 +23,12 @@ func wrap(f func(
 ) error,
 ) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
-		return f(cmd, service.New(indexFs.New(filepath.Join(xdg.DataHome, Name)), userfileFs.New()), args)
+		err := f(cmd, service.New(indexFs.New(filepath.Join(xdg.DataHome, Name)), userfileFs.New()), args)
+		if errors.Is(err, service.ErrCancelled) {
+			os.Exit(1)
+		}
+
+		return err
 	}
 }
 

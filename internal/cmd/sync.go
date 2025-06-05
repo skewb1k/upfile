@@ -1,7 +1,10 @@
 package cmd
 
 import (
+	"errors"
+	"fmt"
 	"path/filepath"
+	"strings"
 
 	"upfile/internal/service"
 
@@ -19,7 +22,27 @@ func sync() *cobra.Command {
 		RunE: wrap(func(cmd *cobra.Command, s *service.Service, args []string) error {
 			fname := filepath.Base(args[0])
 
-			if err := s.Sync(cmd.Context(), fname); err != nil {
+			confirm := func(entries []string) bool {
+				fmt.Println("The following tracked files will be updated:")
+				for _, e := range entries {
+					fmt.Println(" -", e)
+				}
+
+				fmt.Print("Proceed? [Y/n]: ")
+
+				var input string
+				_, _ = fmt.Fscanln(cmd.InOrStdin(), &input)
+
+				input = strings.ToLower(strings.TrimSpace(input))
+				return input == "" || input == "y"
+			}
+
+			if err := s.Sync(cmd.Context(), fname, confirm); err != nil {
+				if errors.Is(err, service.ErrUpToDate) {
+					cmd.Println("Everything up-to-date")
+					return nil
+				}
+
 				return err //nolint: wrapcheck
 			}
 

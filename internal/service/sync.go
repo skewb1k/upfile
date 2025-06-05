@@ -9,6 +9,7 @@ import (
 func (s Service) Sync(
 	ctx context.Context,
 	fname string,
+	confirm func([]string) bool,
 ) error {
 	entries, err := s.indexProvider.GetEntriesByFname(ctx, fname)
 	if err != nil {
@@ -20,9 +21,30 @@ func (s Service) Sync(
 		return fmt.Errorf("get upstream: %w", err)
 	}
 
-	for _, entryDir := range entries {
-		fullPath := filepath.Join(entryDir, fname)
+	toUpdate := make([]string, 0)
 
+	for _, entryDir := range entries {
+		path := filepath.Join(entryDir, fname)
+
+		existing, err := s.userfileProvider.ReadFile(ctx, path)
+		if err != nil {
+			return fmt.Errorf("read file: %w", err)
+		}
+
+		if hash(existing) != hash(upstream) {
+			toUpdate = append(toUpdate, filepath.Join(entryDir, fname))
+		}
+	}
+
+	if len(toUpdate) == 0 {
+		return ErrUpToDate
+	}
+
+	if !confirm(toUpdate) {
+		return ErrCancelled
+	}
+
+	for _, fullPath := range toUpdate {
 		if err := s.userfileProvider.WriteFile(ctx, fullPath, upstream); err != nil {
 			return fmt.Errorf("write file: %w", err)
 		}

@@ -25,9 +25,10 @@ func TestPush(t *testing.T) {
 	cases := []testCase{
 		{
 			name: "successfully push tracked file",
-			path: "./file.txt",
+			path: "/home/user/file.txt",
 			setupMocks: func(idx *index.MockIndexProvider, usr *userfile.MockUserFileProvider) {
-				usr.EXPECT().ReadFile(t.Context(), "./file.txt").Return("content2", nil)
+				idx.EXPECT().CheckEntry(t.Context(), "file.txt", "/home/user").Return(true, nil)
+				usr.EXPECT().ReadFile(t.Context(), "/home/user/file.txt").Return("content2", nil)
 				idx.EXPECT().GetUpstream(t.Context(), "file.txt").Return("content1", nil)
 				idx.EXPECT().SetUpstream(t.Context(), "file.txt", "content2").Return(nil)
 			},
