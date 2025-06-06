@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"upfile/internal/cmd"
+	"github.com/skewb1k/upfile/internal/cmd"
 )
 
 func main() {

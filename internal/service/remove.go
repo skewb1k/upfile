@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"upfile/internal/index"
+	"github.com/skewb1k/upfile/internal/index"
 )
 
 func (s Service) Remove(

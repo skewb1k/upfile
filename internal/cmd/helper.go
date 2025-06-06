@@ -7,9 +7,9 @@ import (
 	"os"
 	"path/filepath"
 
-	indexFs "upfile/internal/index/fs"
-	"upfile/internal/service"
-	userfileFs "upfile/internal/userfile/fs"
+	indexFs "github.com/skewb1k/upfile/internal/index/fs"
+	"github.com/skewb1k/upfile/internal/service"
+	userfileFs "github.com/skewb1k/upfile/internal/userfile/fs"
 
 	"github.com/adrg/xdg"
 	"github.com/fatih/color"

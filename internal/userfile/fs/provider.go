@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"upfile/internal/userfile"
+	"github.com/skewb1k/upfile/internal/userfile"
 )
 
 type Provider struct{}

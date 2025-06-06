@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"upfile/internal/service"
+	"github.com/skewb1k/upfile/internal/service"
 
 	"github.com/spf13/cobra"
 )

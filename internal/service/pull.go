@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"upfile/internal/index"
-	"upfile/internal/userfile"
+	"github.com/skewb1k/upfile/internal/index"
+	"github.com/skewb1k/upfile/internal/userfile"
 )
 
 func (s Service) Pull(

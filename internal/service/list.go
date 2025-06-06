@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"upfile/internal/userfile"
+	"github.com/skewb1k/upfile/internal/userfile"
 )
 
 type File struct {

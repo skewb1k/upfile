@@ -3,8 +3,8 @@ package service
 import (
 	"crypto/sha256"
 
-	"upfile/internal/index"
-	"upfile/internal/userfile"
+	"github.com/skewb1k/upfile/internal/index"
+	"github.com/skewb1k/upfile/internal/userfile"
 )
 
 type Service struct {

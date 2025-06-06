@@ -1,6 +1,6 @@
 # UpFile
 
-**Upfile** is a CLI tool to _sync_ files across multiple projects.
+**Upfile** is a CLI tool for syncing files across multiple projects.
 
 It's designed to help you manage shared configuration files like .prettierrc, .golangci.yml,
 or any other file.
@@ -10,7 +10,6 @@ UpFile operates on a simple but powerful principles:
 - Each filename has one `upstream` version, which acts as the source of truth.
 - You can add multiple instances of the same filename across your projects. These are called `entries`.
 - Entry can be `pushed` to the upstream and be `pulled` from it.
-
 
 # Installation
 
@@ -39,6 +38,7 @@ $ upfile add ~/project-b/.prettierrc
 ```
 
 Check tracked state:
+
 ```bash
 $ upfile ls
 test.txt:
@@ -49,12 +49,14 @@ test.txt:
 2. Make a change and push it
 
 Make a change in one of tracked files and push to the upstream.
+
 ```bash
 $ echo 'change' >> ~/project-a/.prettierrc
 $ upfile push ~/project-a/.prettierrc
 ```
 
 List again to see status:
+
 ```bash
 $ upfile ls
 test.txt:
@@ -71,4 +73,5 @@ The following tracked files will be updated:
 
 Proceed? [Y/n]: y
 ```
+
 Now both files are consistent again.

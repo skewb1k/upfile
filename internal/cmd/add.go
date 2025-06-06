@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"upfile/internal/service"
+	"github.com/skewb1k/upfile/internal/service"
 )
 
 func add() *cobra.Command {

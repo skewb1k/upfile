@@ -4,9 +4,9 @@ import (
 	"errors"
 	"testing"
 
-	"upfile/internal/index"
-	"upfile/internal/service"
-	"upfile/internal/userfile"
+	"github.com/skewb1k/upfile/internal/index"
+	"github.com/skewb1k/upfile/internal/service"
+	"github.com/skewb1k/upfile/internal/userfile"
 
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"upfile/internal/index"
+	"github.com/skewb1k/upfile/internal/index"
 )
 
 func (s Service) Diff(
