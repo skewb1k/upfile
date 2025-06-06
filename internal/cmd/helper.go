@@ -23,7 +23,7 @@ func wrap(f func(
 ) error,
 ) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
-		err := f(cmd, service.New(indexFs.New(filepath.Join(xdg.DataHome, Name)), userfileFs.New()), args)
+		err := f(cmd, service.New(indexFs.New(filepath.Join(xdg.DataHome, name)), userfileFs.New()), args)
 		if errors.Is(err, service.ErrCancelled) {
 			os.Exit(1)
 		}
@@ -67,11 +67,15 @@ func completeFname(
 	}
 
 	files, err := service.New(
-		indexFs.New(filepath.Join(xdg.DataHome, Name)), userfileFs.New(),
+		indexFs.New(filepath.Join(xdg.DataHome, name)), userfileFs.New(),
 	).ListTrackedFilenames(cmd.Context())
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveError
 	}
 
 	return files, cobra.ShellCompDirectiveNoFileComp
+}
+
+func doc(s string) string {
+	return s[1:]
 }

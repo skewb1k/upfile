@@ -11,18 +11,25 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func sync() *cobra.Command {
+func syncCmd() *cobra.Command {
 	// TODO:
 	// var patch bool
 
+	var yes bool
+
 	cmd := &cobra.Command{
 		Use:   "sync <filename>",
-		Short: "Sync all entries of file with upstream",
 		Args:  cobra.ExactArgs(1),
+		Short: "Sync all entries of file with upstream",
+
 		RunE: wrap(func(cmd *cobra.Command, s *service.Service, args []string) error {
 			fname := filepath.Base(args[0])
 
 			confirm := func(entries []string) bool {
+				if yes {
+					return true
+				}
+
 				fmt.Println("The following tracked files will be updated:")
 				for _, e := range entries {
 					fmt.Println(" -", e)
@@ -50,6 +57,7 @@ func sync() *cobra.Command {
 		}),
 	}
 
+	cmd.Flags().BoolVarP(&yes, "yes", "y", false, "Automatic 'yes' to prompts")
 	cmd.ValidArgsFunction = completeFname
 
 	// cmd.Flags().BoolVarP(&patch, "patch", "p", false, "Interactively apply changes per entry")

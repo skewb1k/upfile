@@ -10,15 +10,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const Name = "upfile"
+const name = "upfile"
+
+// Populated by goreleaser during build
+var version = "unknown"
 
 func Main(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int {
 	rootCmd := &cobra.Command{
-		Use: Name,
-		Long: `
-Sync files across multiple projects
-skewb1k <skewb1kunix@gmail.com>
-Source: https://github.com/skewb1k/upfile
+		Use: name,
+		Short: `
+Track and sync files across projects
+
+Support project on Github: https://github.com/skewb1k/upfile
 `[1:],
 		SilenceUsage:  true,
 		SilenceErrors: false,
@@ -40,17 +43,17 @@ Source: https://github.com/skewb1k/upfile
 	rootCmd.SetOut(stdout)
 	rootCmd.SetErr(stderr)
 
-	rootCmd.AddCommand(version())
-	rootCmd.AddCommand(add())
-	rootCmd.AddCommand(remove())
-	rootCmd.AddCommand(diff())
-	rootCmd.AddCommand(show())
-	rootCmd.AddCommand(list())
-	rootCmd.AddCommand(status())
-	rootCmd.AddCommand(pull())
-	rootCmd.AddCommand(push())
-	rootCmd.AddCommand(sync())
-	rootCmd.AddCommand(drop())
+	rootCmd.AddCommand(versionCmd())
+	rootCmd.AddCommand(addCmd())
+	rootCmd.AddCommand(removeCmd())
+	rootCmd.AddCommand(diffCmd())
+	rootCmd.AddCommand(showCmd())
+	rootCmd.AddCommand(listCmd())
+	rootCmd.AddCommand(statusCmd())
+	rootCmd.AddCommand(pullCmd())
+	rootCmd.AddCommand(pushCmd())
+	rootCmd.AddCommand(syncCmd())
+	rootCmd.AddCommand(dropCmd())
 
 	if err := rootCmd.Execute(); err != nil {
 		var exitError *exec.ExitError

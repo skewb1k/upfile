@@ -9,7 +9,7 @@ import (
 	"github.com/skewb1k/upfile/internal/service"
 )
 
-func add() *cobra.Command {
+func addCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "add <path>",
 		Short: "Add a file to be tracked",

@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func push() *cobra.Command {
+func pushCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "push <path>",
 		Short: "Push file to the upstream",

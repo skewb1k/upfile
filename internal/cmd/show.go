@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func show() *cobra.Command {
+func showCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "show <filename>",
 		Short: "Show upstream version of file",

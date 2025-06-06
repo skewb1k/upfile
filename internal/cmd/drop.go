@@ -10,16 +10,33 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func drop() *cobra.Command {
+func dropCmd() *cobra.Command {
+	var yes bool
+
 	cmd := &cobra.Command{
 		Use:   "drop <filename>",
-		Short: "Drop all entries and upstream version of file",
 		Args:  cobra.ExactArgs(1),
+		Short: "Remove tracked file upstream and entries",
+		Long: doc(`
+Permanently removes a file from UpFile tracking:
+
+- Deletes the upstream version
+- Removes all tracked entries from the index
+
+Note: This does NOT delete any actual files from user-space filesystem.
+
+Use with caution. You will be prompted to confirm removal unless --yes is specified.
+`),
+
 		RunE: wrap(func(cmd *cobra.Command, s *service.Service, args []string) error {
 			fname := filepath.Base(args[0])
 
 			confirm := func(entries []string) bool {
-				fmt.Println("The following tracked files will be deleted:")
+				if yes {
+					return true
+				}
+
+				fmt.Println("The following files will be untracked and removed from UpFile:")
 				for _, e := range entries {
 					fmt.Println(" -", e)
 				}
@@ -39,6 +56,7 @@ func drop() *cobra.Command {
 		}),
 	}
 
+	cmd.Flags().BoolVarP(&yes, "yes", "y", false, "Automatic 'yes' to prompts")
 	cmd.ValidArgsFunction = completeFname
 
 	return cmd

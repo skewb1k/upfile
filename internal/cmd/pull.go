@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func pull() *cobra.Command {
+func pullCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "pull <path>",
 		Short: "Pull file from upstream",

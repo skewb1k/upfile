@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func remove() *cobra.Command {
+func removeCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:     "remove <path>",
 		Short:   "Remove entry from tracked list",

@@ -4,14 +4,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const Version = "v0.0.1"
-
-func version() *cobra.Command {
+func versionCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "version",
-		Short: "Print version",
+		Use:               "version",
+		Short:             "Print version",
+		Args:              cobra.NoArgs,
+		ValidArgsFunction: cobra.NoFileCompletions,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cmd.Println(Version)
+			cmd.Println(version)
 			return nil
 		},
 	}

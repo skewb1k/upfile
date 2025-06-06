@@ -1,14 +1,19 @@
 # UpFile
 
-**Upfile** is a CLI tool for syncing files across multiple places.
+> ⚠️ **Work in Progress**: This project is under active development.
+> The CLI is not stable and may change at any time until v1.0.0 release.
+> If you encounter any issues on beta versions, try to delete $UPFILE_DIR directory, its layout may change
+
+**UpFile** is a CLI tool for syncing files across multiple projects.
 
 It's designed to help you manage shared configuration files like .prettierrc, .golangci.yml,
-or any other file.
+or any other files.
 
 UpFile operates on a simple but powerful principles:
 
-- Each filename has one `upstream` version, which acts as the source of truth.
-- You can add multiple instances of the same filename across your projects. These are called `entries`.
+- Each file identifies by unique `filename`.
+- Each filename has associated with it `upstream` version, which acts as the source of truth.
+- You can add multiple instances of the same file across your projects. These are called `entries`.
 - Entry can be `pushed` to the upstream and be `pulled` from it.
 
 # Installation
@@ -26,9 +31,9 @@ Suppose you have two projects: project-a and project-b, and both have the same c
 ~/project-b/.prettierrc
 ```
 
-And you want to keep them in sync, edit one file and easily spread change to other places in other your projects.
+And you want to keep them in sync, edit one file and easily spread changes to other places in other projects.
 
-1. Add files to tracking
+## Add files to tracking
 
 Use `add` to register each file:
 
@@ -46,7 +51,7 @@ test.txt:
   /home/user/project-b/.prettierrc  Up-to-date
 ```
 
-2. Make a change and push it
+## Make a change and push it
 
 Make a change in one of tracked files and push to the upstream.
 
@@ -64,7 +69,7 @@ test.txt:
   /home/user/project-b/.prettierrc  Modified
 ```
 
-3. Sync other copies
+## Sync other copies
 
 ```bash
 $ upfile sync test.txt

@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func status() *cobra.Command {
+func statusCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "status [<dir>]",
 		Short: "Print status of files in dir (default: current dir)",
