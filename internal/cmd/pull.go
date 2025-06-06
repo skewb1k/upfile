@@ -11,21 +11,17 @@ import (
 )
 
 func pull() *cobra.Command {
-	var dest string
-
 	cmd := &cobra.Command{
-		Use:   "pull <filename>",
-		Short: "Pull file from origin",
+		Use:   "pull <path>",
+		Short: "Pull file from upstream",
 		Args:  cobra.ExactArgs(1),
 		RunE: wrap(func(cmd *cobra.Command, s *service.Service, args []string) error {
-			destAbs, err := filepath.Abs(dest)
+			path, err := filepath.Abs(args[0])
 			if err != nil {
 				return fmt.Errorf("failed to get abs path to dest dir: %w", err)
 			}
 
-			fname := filepath.Base(args[0])
-
-			if err := s.Pull(cmd.Context(), fname, destAbs); err != nil {
+			if err := s.Pull(cmd.Context(), path); err != nil {
 				if errors.Is(err, service.ErrUpToDate) {
 					cmd.Println("File up-to-date")
 					return nil
@@ -37,8 +33,6 @@ func pull() *cobra.Command {
 			return nil
 		}),
 	}
-
-	cmd.Flags().StringVarP(&dest, "dest", "d", ".", "Destination folder")
 
 	return cmd
 }

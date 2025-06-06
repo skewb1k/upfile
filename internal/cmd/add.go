@@ -24,8 +24,6 @@ func add() *cobra.Command {
 				return err //nolint: wrapcheck
 			}
 
-			cmd.Printf("Added: %s\n", path)
-
 			return nil
 		}),
 	}

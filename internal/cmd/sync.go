@@ -28,7 +28,7 @@ func sync() *cobra.Command {
 					fmt.Println(" -", e)
 				}
 
-				fmt.Print("Proceed? [Y/n]: ")
+				fmt.Print("\nProceed? [Y/n]: ")
 
 				var input string
 				_, _ = fmt.Fscanln(cmd.InOrStdin(), &input)

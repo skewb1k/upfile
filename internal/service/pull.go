@@ -12,15 +12,14 @@ import (
 
 func (s Service) Pull(
 	ctx context.Context,
-	fname string,
-	destDir string,
+	path string,
 ) error {
+	fname, destDir := filepath.Base(path), filepath.Dir(path)
+
 	content, err := s.indexProvider.GetUpstream(ctx, fname)
 	if err != nil {
 		return fmt.Errorf("get upstream: %w", err)
 	}
-
-	path := filepath.Join(destDir, fname)
 
 	existing, err := s.userfileProvider.ReadFile(ctx, path)
 	if err != nil {

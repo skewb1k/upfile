@@ -14,8 +14,12 @@ const Name = "upfile"
 
 func Main(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int {
 	rootCmd := &cobra.Command{
-		Use:           Name,
-		Long:          `Track and sync files across projects.`,
+		Use: Name,
+		Long: `
+Sync files across multiple projects
+skewb1k <skewb1kunix@gmail.com>
+Source: https://github.com/skewb1k/upfile
+`[1:],
 		SilenceUsage:  true,
 		SilenceErrors: false,
 	}

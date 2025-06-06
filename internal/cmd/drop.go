@@ -23,7 +23,7 @@ func drop() *cobra.Command {
 				for _, e := range entries {
 					fmt.Println(" -", e)
 				}
-				fmt.Print("Proceed? [y/N]: ")
+				fmt.Print("\nProceed? [y/N]: ")
 
 				var input string
 				_, _ = fmt.Fscanln(cmd.InOrStdin(), &input)
