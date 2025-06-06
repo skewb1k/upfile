@@ -25,7 +25,6 @@ Source: https://github.com/skewb1k/upfile
 	}
 	rootCmd.SetErrPrefix(red("error:"))
 
-	// TODO: adjust colors
 	cc.Init(&cc.Config{
 		RootCmd:         rootCmd,
 		Headings:        cc.HiCyan + cc.Bold + cc.Underline,

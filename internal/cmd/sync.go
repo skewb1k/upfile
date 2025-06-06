@@ -50,6 +50,8 @@ func sync() *cobra.Command {
 		}),
 	}
 
+	cmd.ValidArgsFunction = completeFname
+
 	// cmd.Flags().BoolVarP(&patch, "patch", "p", false, "Interactively apply changes per entry")
 
 	return cmd

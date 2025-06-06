@@ -56,3 +56,22 @@ func statusAsString(status service.EntryStatus) string {
 		panic("UNEXPECTED")
 	}
 }
+
+func completeFname(
+	cmd *cobra.Command,
+	args []string,
+	toComplete string,
+) ([]string, cobra.ShellCompDirective) {
+	if len(args) >= 1 {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	files, err := service.New(
+		indexFs.New(filepath.Join(xdg.DataHome, Name)), userfileFs.New(),
+	).ListTrackedFilenames(cmd.Context())
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveError
+	}
+
+	return files, cobra.ShellCompDirectiveNoFileComp
+}

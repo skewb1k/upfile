@@ -17,6 +17,7 @@ func (s Service) Show(
 		if errors.Is(err, index.ErrNotFound) {
 			return "", ErrNotTracked
 		}
+
 		return "", fmt.Errorf("get upstream: %w", err)
 	}
 

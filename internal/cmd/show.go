@@ -9,7 +9,7 @@ import (
 )
 
 func show() *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "show <filename>",
 		Short: "Show upstream version of file",
 		Args:  cobra.ExactArgs(1),
@@ -25,4 +25,8 @@ func show() *cobra.Command {
 			return nil
 		}),
 	}
+
+	cmd.ValidArgsFunction = completeFname
+
+	return cmd
 }

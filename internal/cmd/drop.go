@@ -11,7 +11,7 @@ import (
 )
 
 func drop() *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "drop <filename>",
 		Short: "Drop all entries and upstream version of file",
 		Args:  cobra.ExactArgs(1),
@@ -38,4 +38,8 @@ func drop() *cobra.Command {
 			return nil
 		}),
 	}
+
+	cmd.ValidArgsFunction = completeFname
+
+	return cmd
 }

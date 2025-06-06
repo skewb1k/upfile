@@ -64,3 +64,12 @@ func (s Service) List(
 
 	return res, nil
 }
+
+func (s Service) ListTrackedFilenames(ctx context.Context) ([]string, error) {
+	files, err := s.indexProvider.GetFiles(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("get files: %w", err)
+	}
+
+	return files, nil
+}
