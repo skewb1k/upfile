@@ -80,3 +80,13 @@ Proceed? [Y/n]: y
 ```
 
 Now both files are consistent again.
+
+# Environment Variables
+
+- `$UPFILE_DIR` - Path to the directory where UpFile stores metadata and upstream file versions. By default `$XDG_DATA_HOME/upfile`
+
+# Shell Completion
+
+UpFile can generate Bash, fish, PowerShell, and Zsh completion files.
+
+See the instructions on `upfile completion <YOUR_SHELL> -h`

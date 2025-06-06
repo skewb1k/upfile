@@ -11,10 +11,26 @@ import (
 	"github.com/skewb1k/upfile/internal/service"
 	userfileFs "github.com/skewb1k/upfile/internal/userfile/fs"
 
-	"github.com/adrg/xdg"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
+
+func getBaseDir() string {
+	if dir := os.Getenv("UPFILE_DIR"); dir != "" {
+		return dir
+	}
+
+	if xdgData := os.Getenv("XDG_DATA_HOME"); xdgData != "" {
+		return filepath.Join(xdgData, name)
+	}
+
+	home, err := os.UserHomeDir()
+	if err != nil {
+		panic(fmt.Sprintf("failed to get current user's home dir: %s", err))
+	}
+
+	return filepath.Join(home, ".local", "share", name)
+}
 
 func wrap(f func(
 	cmd *cobra.Command,
@@ -23,7 +39,7 @@ func wrap(f func(
 ) error,
 ) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
-		err := f(cmd, service.New(indexFs.New(filepath.Join(xdg.DataHome, name)), userfileFs.New()), args)
+		err := f(cmd, service.New(indexFs.New(getBaseDir()), userfileFs.New()), args)
 		if errors.Is(err, service.ErrCancelled) {
 			os.Exit(1)
 		}
@@ -67,7 +83,7 @@ func completeFname(
 	}
 
 	files, err := service.New(
-		indexFs.New(filepath.Join(xdg.DataHome, name)), userfileFs.New(),
+		indexFs.New(getBaseDir()), userfileFs.New(),
 	).ListTrackedFilenames(cmd.Context())
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveError

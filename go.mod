@@ -11,7 +11,6 @@ tool (
 )
 
 require (
-	github.com/adrg/xdg v0.5.3
 	github.com/fatih/color v1.18.0
 	github.com/ivanpirog/coloredcobra v1.0.1
 	github.com/spf13/cobra v1.9.1
