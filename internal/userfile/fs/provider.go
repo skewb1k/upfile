@@ -52,5 +52,6 @@ func (p Provider) CheckFile(ctx context.Context, path string) (bool, error) {
 	}
 
 	_ = f.Close()
+
 	return true, nil
 }

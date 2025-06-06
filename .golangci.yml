@@ -1,91 +1,23 @@
 version: "2"
 linters:
-  default: none
-  enable:
-    - asasalint
-    - asciicheck
-    - bidichk
-    - bodyclose
-    - canonicalheader
-    - containedctx
-    - contextcheck
-    - copyloopvar
-    - decorder
-    - depguard
-    - dogsled
-    - dupl
-    - durationcheck
-    - err113
-    - errcheck
-    - errname
-    - errorlint
-    - exhaustive
-    - exhaustruct
-    - exptostd
-    - fatcontext
-    - forbidigo
-    - forcetypeassert
-    - ginkgolinter
-    - gocheckcompilerdirectives
-    - gochecknoinits
-    - gochecksumtype
-    - goconst
-    - gocritic
-    - goheader
-    - gomoddirectives
-    - gomodguard
-    - goprintffuncname
-    - gosec
-    - gosmopolitan
-    - govet
-    - grouper
-    - iface
-    - importas
-    - inamedparam
-    - ineffassign
-    - interfacebloat
-    - intrange
-    - lll
-    - loggercheck
-    - makezero
-    - mirror
-    - misspell
-    - musttag
-    - nakedret
-    - nilerr
-    - nilnesserr
-    - noctx
-    - nonamedreturns
-    - nosprintfhostport
-    - paralleltest
-    - perfsprint
-    - prealloc
-    - predeclared
-    - promlinter
-    - protogetter
-    - reassign
-    - revive
-    - rowserrcheck
-    - sloglint
-    - spancheck
-    - sqlclosecheck
-    - staticcheck
-    - tagalign
-    - tagliatelle
-    - testableexamples
-    - testifylint
-    - testpackage
-    - thelper
-    - unconvert
-    - unparam
-    - unused
-    - usestdlibvars
-    - usetesting
-    - wastedassign
-    - whitespace
-    - wrapcheck
-    # - wsl
-    - zerologlint
+  default: all
+  disable:
+    - cyclop
+    - dupword
+    - funcorder
+    - funlen
+    - gochecknoglobals
+    - gocognit
+    - varnamelen
+    - mnd
+    - gocyclo
+    - godot
+    - godox
+    - maintidx
+    - nestif
+    - nilnil
+    - recvcheck
+    - wsl
   settings:
     exhaustive:
       # Presence of "default" case in switch statements satisfies exhaustiveness,
@@ -116,8 +48,6 @@ linters:
               desc: use math/rand/v2
             - pkg: reflect
               desc: Please don't use reflect package
-            - pkg: "log"
-              desc: use structured logging like zap, zerolog or slog
             - pkg: io/ioutil
               desc: io/ioutil package has been deprecated
     wsl:

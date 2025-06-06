@@ -22,6 +22,7 @@ func showCmd() *cobra.Command {
 			}
 
 			cmd.Print(content)
+
 			return nil
 		}),
 	}

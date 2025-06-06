@@ -12,6 +12,7 @@ func versionCmd() *cobra.Command {
 		ValidArgsFunction: cobra.NoFileCompletions,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cmd.Println(version)
+
 			return nil
 		},
 	}

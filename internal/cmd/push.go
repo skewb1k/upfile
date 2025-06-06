@@ -24,6 +24,7 @@ func pushCmd() *cobra.Command {
 			if err := s.Push(cmd.Context(), path); err != nil {
 				if errors.Is(err, service.ErrUpToDate) {
 					cmd.Println("File up-to-date")
+
 					return nil
 				}
 

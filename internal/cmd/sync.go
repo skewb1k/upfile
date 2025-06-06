@@ -41,12 +41,14 @@ func syncCmd() *cobra.Command {
 				_, _ = fmt.Fscanln(cmd.InOrStdin(), &input)
 
 				input = strings.ToLower(strings.TrimSpace(input))
+
 				return input == "" || input == "y"
 			}
 
 			if err := s.Sync(cmd.Context(), fname, confirm); err != nil {
 				if errors.Is(err, service.ErrUpToDate) {
 					cmd.Println("Everything up-to-date")
+
 					return nil
 				}
 
