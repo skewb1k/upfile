@@ -1,6 +1,6 @@
 # UpFile
 
-**Upfile** is a CLI tool for syncing files across multiple projects.
+**Upfile** is a CLI tool for syncing files across multiple places.
 
 It's designed to help you manage shared configuration files like .prettierrc, .golangci.yml,
 or any other file.
@@ -14,7 +14,7 @@ UpFile operates on a simple but powerful principles:
 # Installation
 
 ```bash
-go install github.com/skewb1k/upfile@latest
+go install github.com/skewb1k/upfile/cmd/upfile@latest
 ```
 
 # Basic Usage
