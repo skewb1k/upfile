@@ -1,5 +1,12 @@
 .DEFAULT_GOAL := test
 
+
+BINARY = upfile
+ifeq ($(OS),Windows_NT)
+	BINARY := $(BINARY).exe
+endif
+
+
 .PHONY: fmt
 fmt:
 	@go tool gofumpt -w -l .
@@ -16,9 +23,12 @@ test:
 
 .PHONY: build
 build:
-	go build -o ~/.cache/bin/upfile ./cmd/upfile
+	go build -o dist/$(BINARY) ./cmd/upfile
 
 .PHONY: gen
 gen:
 	@go generate ./...
 
+.PHONY: clean
+clean:
+	rm -f dist/$(BINARY)

@@ -1,0 +1,10 @@
+/dist/
+
+/vendor/
+coverage.out
+coverage.xml
+
+/.idea/
+/.vscode/
+
+.DS_Store
