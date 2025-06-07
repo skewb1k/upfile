@@ -14,7 +14,7 @@ func (s Service) Drop(
 	confirm func([]string) bool,
 ) error {
 	// TODO: collect errors
-	entries, err := s.indexProvider.GetEntriesByFname(ctx, fname)
+	entries, err := s.indexProvider.GetEntriesByFilename(ctx, fname)
 	if err != nil {
 		return fmt.Errorf("get entries by filename: %w", err)
 	}

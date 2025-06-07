@@ -12,7 +12,7 @@ or any other files.
 UpFile operates on a simple but powerful principles:
 
 - Each file identifies by unique `filename`.
-- Each filename has associated with it `upstream` version, which acts as the source of truth.
+- Each filename has associated with its `upstream` version, which acts as the source of truth.
 - You can add multiple instances of the same file across your projects. These are called `entries`.
 - Entry can be `pushed` to the upstream and be `pulled` from it.
 
@@ -90,3 +90,13 @@ Now both files are consistent again.
 UpFile can generate Bash, fish, PowerShell, and Zsh completion files.
 
 See the instructions on `upfile completion <YOUR_SHELL> -h`
+
+# Contributing
+
+Contributions are welcome. If you find a bug, have an idea, or want to improve something — feel free to open an issue or submit a pull request.
+
+Before committing, please make sure the code passes linting and tests:
+
+```bash
+make lint test
+```

@@ -26,7 +26,7 @@ func (s Service) Status(
 	ctx context.Context,
 	dir string,
 ) ([]Entry, error) {
-	files, err := s.indexProvider.GetFilesByEntryDir(ctx, dir)
+	files, err := s.indexProvider.GetFilenamesByEntry(ctx, dir)
 	if err != nil {
 		return nil, fmt.Errorf("get files by entry dir: %w", err)
 	}

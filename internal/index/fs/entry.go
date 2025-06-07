@@ -17,12 +17,12 @@ const (
 	byName         = "by-name"
 )
 
-func (p Provider) getPathToEntriesByFname(fname string) string {
+func (p Provider) getPathToEntriesByName(fname string) string {
 	return filepath.Join(
 		p.BaseDir,
 		entriesDirname,
 		byName,
-		fname,
+		filepath.Clean(fname),
 	)
 }
 
@@ -31,7 +31,7 @@ func (p Provider) getPathToEntriesByDir(dir string) string {
 		p.BaseDir,
 		entriesDirname,
 		byDirName,
-		dir,
+		filepath.Clean(dir),
 	)
 }
 
@@ -51,9 +51,9 @@ func decodePath(encoded string) ([]byte, error) {
 func (p Provider) CreateEntry(
 	ctx context.Context,
 	fname string,
-	entryDir string,
+	entry string,
 ) error {
-	encoded := encodePath([]byte(entryDir))
+	encoded := encodePath([]byte(entry))
 
 	byDirPath := p.getPathToEntriesByDir(encoded)
 	if err := os.MkdirAll(byDirPath, 0o700); err != nil {
@@ -70,7 +70,7 @@ func (p Provider) CreateEntry(
 	}
 	_ = byDirFile.Close()
 
-	byNameDir := p.getPathToEntriesByFname(fname)
+	byNameDir := p.getPathToEntriesByName(fname)
 
 	if err := os.MkdirAll(byNameDir, 0o700); err != nil {
 		return fmt.Errorf("mkdir by-name dir: %w", err)
@@ -89,8 +89,8 @@ func (p Provider) CreateEntry(
 	return nil
 }
 
-func (p Provider) GetEntriesByFname(ctx context.Context, fname string) ([]string, error) {
-	entries, err := os.ReadDir(p.getPathToEntriesByFname(fname))
+func (p Provider) GetEntriesByFilename(ctx context.Context, fname string) ([]string, error) {
+	entries, err := os.ReadDir(p.getPathToEntriesByName(fname))
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return nil, nil
@@ -115,9 +115,9 @@ func (p Provider) GetEntriesByFname(ctx context.Context, fname string) ([]string
 func (p Provider) DeleteEntry(
 	ctx context.Context,
 	fname string,
-	entryDir string,
+	entry string,
 ) error {
-	encoded := encodePath([]byte(entryDir))
+	encoded := encodePath([]byte(entry))
 	byDirDir := p.getPathToEntriesByDir(encoded)
 
 	if err := os.Remove(filepath.Join(byDirDir, fname)); err != nil {
@@ -134,7 +134,7 @@ func (p Provider) DeleteEntry(
 		}
 	}
 
-	byNameDir := p.getPathToEntriesByFname(fname)
+	byNameDir := p.getPathToEntriesByName(fname)
 	if err := os.Remove(filepath.Join(byNameDir, encoded)); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			err = index.ErrNotFound
@@ -152,8 +152,8 @@ func (p Provider) DeleteEntry(
 	return nil
 }
 
-func (p Provider) CheckEntry(ctx context.Context, fname string, entryDir string) (bool, error) {
-	byNamePath := filepath.Join(p.getPathToEntriesByFname(fname), encodePath([]byte(entryDir)))
+func (p Provider) CheckEntry(ctx context.Context, fname string, entry string) (bool, error) {
+	byNamePath := filepath.Join(p.getPathToEntriesByName(fname), encodePath([]byte(entry)))
 
 	if _, err := os.Stat(byNamePath); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
@@ -166,8 +166,8 @@ func (p Provider) CheckEntry(ctx context.Context, fname string, entryDir string)
 	return true, nil
 }
 
-func (p Provider) GetFilesByEntryDir(ctx context.Context, entryDir string) ([]string, error) {
-	encoded := encodePath([]byte(entryDir))
+func (p Provider) GetFilenamesByEntry(ctx context.Context, entry string) ([]string, error) {
+	encoded := encodePath([]byte(entry))
 	byDirDir := p.getPathToEntriesByDir(encoded)
 
 	entries, err := os.ReadDir(byDirDir)

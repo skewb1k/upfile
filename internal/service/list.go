@@ -17,7 +17,7 @@ type File struct {
 func (s Service) List(
 	ctx context.Context,
 ) ([]File, error) {
-	files, err := s.indexProvider.GetFiles(ctx)
+	files, err := s.indexProvider.GetFilenames(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("get files: %w", err)
 	}
@@ -25,7 +25,7 @@ func (s Service) List(
 	res := make([]File, len(files))
 
 	for i, fname := range files {
-		entries, err := s.indexProvider.GetEntriesByFname(ctx, fname)
+		entries, err := s.indexProvider.GetEntriesByFilename(ctx, fname)
 		if err != nil {
 			return nil, fmt.Errorf("get entries by filename: %w", err)
 		}
@@ -66,7 +66,7 @@ func (s Service) List(
 }
 
 func (s Service) ListTrackedFilenames(ctx context.Context) ([]string, error) {
-	files, err := s.indexProvider.GetFiles(ctx)
+	files, err := s.indexProvider.GetFilenames(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("get files: %w", err)
 	}

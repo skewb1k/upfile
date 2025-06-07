@@ -22,7 +22,7 @@ func New(baseDir string) *Provider {
 
 const versionsDirname = "versions"
 
-func (p Provider) GetFiles(ctx context.Context) ([]string, error) {
+func (p Provider) GetFilenames(ctx context.Context) ([]string, error) {
 	entries, err := os.ReadDir(filepath.Join(p.BaseDir, versionsDirname))
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {

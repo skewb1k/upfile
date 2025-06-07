@@ -3,7 +3,6 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"path/filepath"
 	"strings"
 
 	"github.com/skewb1k/upfile/internal/service"
@@ -23,7 +22,12 @@ func syncCmd() *cobra.Command {
 		Short: "Sync all entries of file with upstream",
 
 		RunE: wrap(func(cmd *cobra.Command, s *service.Service, args []string) error {
-			fname := filepath.Base(args[0])
+			// FIXME:
+			// fname, ok := filename.Extract(args[0])
+			// if !ok {
+			// 	return errors.New("invalid")
+			// }
+			fname := args[0]
 
 			confirm := func(entries []string) bool {
 				if yes {
