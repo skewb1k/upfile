@@ -24,6 +24,7 @@ func (s Service) List(
 
 	res := make([]File, len(files))
 
+	// TODO: refactor, do not duplicate Status command logic
 	for i, fname := range files {
 		entries, err := s.indexProvider.GetEntriesByFilename(ctx, fname)
 		if err != nil {
@@ -51,7 +52,7 @@ func (s Service) List(
 				}
 
 				e[j].Status = EntryStatusDeleted
-			} else if hash(existing) != hash(upstream) {
+			} else if !upstream.Hash.EqualString(existing) {
 				e[j].Status = EntryStatusModified
 			}
 		}

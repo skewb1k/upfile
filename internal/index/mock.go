@@ -350,10 +350,10 @@ func (c *MockIndexProviderGetFilenamesByEntryCall) DoAndReturn(f func(context.Co
 }
 
 // GetUpstream mocks base method.
-func (m *MockIndexProvider) GetUpstream(ctx context.Context, fname string) (string, error) {
+func (m *MockIndexProvider) GetUpstream(ctx context.Context, fname string) (Upstream, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUpstream", ctx, fname)
-	ret0, _ := ret[0].(string)
+	ret0, _ := ret[0].(Upstream)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -371,35 +371,35 @@ type MockIndexProviderGetUpstreamCall struct {
 }
 
 // Return rewrite *gomock.Call.Return
-func (c *MockIndexProviderGetUpstreamCall) Return(arg0 string, arg1 error) *MockIndexProviderGetUpstreamCall {
+func (c *MockIndexProviderGetUpstreamCall) Return(arg0 Upstream, arg1 error) *MockIndexProviderGetUpstreamCall {
 	c.Call = c.Call.Return(arg0, arg1)
 	return c
 }
 
 // Do rewrite *gomock.Call.Do
-func (c *MockIndexProviderGetUpstreamCall) Do(f func(context.Context, string) (string, error)) *MockIndexProviderGetUpstreamCall {
+func (c *MockIndexProviderGetUpstreamCall) Do(f func(context.Context, string) (Upstream, error)) *MockIndexProviderGetUpstreamCall {
 	c.Call = c.Call.Do(f)
 	return c
 }
 
 // DoAndReturn rewrite *gomock.Call.DoAndReturn
-func (c *MockIndexProviderGetUpstreamCall) DoAndReturn(f func(context.Context, string) (string, error)) *MockIndexProviderGetUpstreamCall {
+func (c *MockIndexProviderGetUpstreamCall) DoAndReturn(f func(context.Context, string) (Upstream, error)) *MockIndexProviderGetUpstreamCall {
 	c.Call = c.Call.DoAndReturn(f)
 	return c
 }
 
 // SetUpstream mocks base method.
-func (m *MockIndexProvider) SetUpstream(ctx context.Context, fname, value string) error {
+func (m *MockIndexProvider) SetUpstream(ctx context.Context, fname string, upstream *Upstream) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetUpstream", ctx, fname, value)
+	ret := m.ctrl.Call(m, "SetUpstream", ctx, fname, upstream)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SetUpstream indicates an expected call of SetUpstream.
-func (mr *MockIndexProviderMockRecorder) SetUpstream(ctx, fname, value any) *MockIndexProviderSetUpstreamCall {
+func (mr *MockIndexProviderMockRecorder) SetUpstream(ctx, fname, upstream any) *MockIndexProviderSetUpstreamCall {
 	mr.mock.ctrl.T.Helper()
-	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetUpstream", reflect.TypeOf((*MockIndexProvider)(nil).SetUpstream), ctx, fname, value)
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetUpstream", reflect.TypeOf((*MockIndexProvider)(nil).SetUpstream), ctx, fname, upstream)
 	return &MockIndexProviderSetUpstreamCall{Call: call}
 }
 
@@ -415,13 +415,13 @@ func (c *MockIndexProviderSetUpstreamCall) Return(arg0 error) *MockIndexProvider
 }
 
 // Do rewrite *gomock.Call.Do
-func (c *MockIndexProviderSetUpstreamCall) Do(f func(context.Context, string, string) error) *MockIndexProviderSetUpstreamCall {
+func (c *MockIndexProviderSetUpstreamCall) Do(f func(context.Context, string, *Upstream) error) *MockIndexProviderSetUpstreamCall {
 	c.Call = c.Call.Do(f)
 	return c
 }
 
 // DoAndReturn rewrite *gomock.Call.DoAndReturn
-func (c *MockIndexProviderSetUpstreamCall) DoAndReturn(f func(context.Context, string, string) error) *MockIndexProviderSetUpstreamCall {
+func (c *MockIndexProviderSetUpstreamCall) DoAndReturn(f func(context.Context, string, *Upstream) error) *MockIndexProviderSetUpstreamCall {
 	c.Call = c.Call.DoAndReturn(f)
 	return c
 }

@@ -31,7 +31,7 @@ func (s Service) Sync(
 			return fmt.Errorf("read file: %w", err)
 		}
 
-		if hash(existing) != hash(upstream) {
+		if !upstream.Hash.EqualString(existing) {
 			toUpdate = append(toUpdate, filepath.Join(entryDir, fname))
 		}
 	}
@@ -45,7 +45,7 @@ func (s Service) Sync(
 	}
 
 	for _, fullPath := range toUpdate {
-		if err := s.userfileProvider.WriteFile(ctx, fullPath, upstream); err != nil {
+		if err := s.userfileProvider.WriteFile(ctx, fullPath, upstream.Content); err != nil {
 			return fmt.Errorf("write file: %w", err)
 		}
 	}

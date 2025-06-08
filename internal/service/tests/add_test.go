@@ -31,8 +31,9 @@ func TestAdd(t *testing.T) {
 				usr.EXPECT().ReadFile(t.Context(), "some/dir/file.txt").Return("file content", nil)
 				idx.EXPECT().CreateEntry(t.Context(), "file.txt", "some/dir").Return(nil)
 				idx.EXPECT().CheckUpstream(t.Context(), "file.txt").Return(false, nil)
-				idx.EXPECT().SetUpstream(t.Context(), "file.txt", "file content").Return(nil)
+				idx.EXPECT().SetUpstream(t.Context(), "file.txt", index.NewUpstream("file content")).Return(nil)
 			},
+			expectedErr: nil,
 		},
 		{
 			name: "entry already exists",

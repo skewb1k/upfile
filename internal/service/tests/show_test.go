@@ -28,7 +28,9 @@ func TestShow(t *testing.T) {
 			name:  "successfully get upstream",
 			fname: "file.txt",
 			setupMocks: func(idx *index.MockIndexProvider, usr *userfile.MockUserFileProvider) {
-				idx.EXPECT().GetUpstream(t.Context(), "file.txt").Return("content", nil)
+				idx.EXPECT().GetUpstream(t.Context(), "file.txt").Return(index.Upstream{
+					Content: "content",
+				}, nil)
 			},
 			expectedRes: "content",
 			expectedErr: nil,
@@ -37,7 +39,7 @@ func TestShow(t *testing.T) {
 			name:  "file not tracked",
 			fname: "file.txt",
 			setupMocks: func(idx *index.MockIndexProvider, usr *userfile.MockUserFileProvider) {
-				idx.EXPECT().GetUpstream(t.Context(), "file.txt").Return("", index.ErrNotFound)
+				idx.EXPECT().GetUpstream(t.Context(), "file.txt").Return(index.Upstream{}, index.ErrNotFound)
 			},
 			expectedRes: "",
 			expectedErr: service.ErrNotTracked,

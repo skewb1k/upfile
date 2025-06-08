@@ -12,7 +12,7 @@ func (s Service) Diff(
 	ctx context.Context,
 	fname string,
 ) (string, error) {
-	content, err := s.indexProvider.GetUpstream(ctx, fname)
+	upstream, err := s.indexProvider.GetUpstream(ctx, fname)
 	if err != nil {
 		if errors.Is(err, index.ErrNotFound) {
 			return "", ErrNotTracked
@@ -21,5 +21,5 @@ func (s Service) Diff(
 		return "", fmt.Errorf("get upstream: %w", err)
 	}
 
-	return content, nil
+	return upstream.Content, nil
 }

@@ -39,7 +39,7 @@ func (s Service) Add(
 	}
 
 	if !upstreamExists {
-		if err := s.indexProvider.SetUpstream(ctx, fname, content); err != nil {
+		if err := s.indexProvider.SetUpstream(ctx, fname, index.NewUpstream(content)); err != nil {
 			return fmt.Errorf("set upstream: %w", err)
 		}
 	}

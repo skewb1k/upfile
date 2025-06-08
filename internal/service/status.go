@@ -52,7 +52,7 @@ func (s Service) Status(
 			}
 
 			res[i].Status = EntryStatusDeleted
-		} else if hash(existing) != hash(upstream) {
+		} else if !upstream.Hash.EqualString(existing) {
 			res[i].Status = EntryStatusModified
 		}
 	}

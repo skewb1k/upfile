@@ -29,8 +29,10 @@ func TestPush(t *testing.T) {
 			setupMocks: func(idx *index.MockIndexProvider, usr *userfile.MockUserFileProvider) {
 				idx.EXPECT().CheckEntry(t.Context(), "file.txt", "/home/user").Return(true, nil)
 				usr.EXPECT().ReadFile(t.Context(), "/home/user/file.txt").Return("content2", nil)
-				idx.EXPECT().GetUpstream(t.Context(), "file.txt").Return("content1", nil)
-				idx.EXPECT().SetUpstream(t.Context(), "file.txt", "content2").Return(nil)
+				idx.EXPECT().GetUpstream(t.Context(), "file.txt").Return(index.Upstream{
+					Content: "content1",
+				}, nil)
+				idx.EXPECT().SetUpstream(t.Context(), "file.txt", index.NewUpstream("content2")).Return(nil)
 			},
 			expectedErr: nil,
 		},

@@ -1,0 +1,28 @@
+package sha256
+
+import (
+	"crypto/sha256"
+	"errors"
+)
+
+type SHA256 [32]byte
+
+var ErrInvalidLength = errors.New("invalid length")
+
+func ConvertSlice(hash []byte) (SHA256, error) {
+	var sha SHA256
+	if len(hash) != 32 {
+		return SHA256{}, ErrInvalidLength
+	}
+
+	copy(sha[:], hash)
+	return sha, nil
+}
+
+func (h SHA256) EqualString(s string) bool {
+	return h == FromString(s)
+}
+
+func FromString(s string) SHA256 {
+	return sha256.Sum256([]byte(s))
+}

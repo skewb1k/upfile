@@ -16,7 +16,7 @@ func (s Service) Pull(
 ) error {
 	fname, destDir := filepath.Base(path), filepath.Dir(path)
 
-	content, err := s.indexProvider.GetUpstream(ctx, fname)
+	upstream, err := s.indexProvider.GetUpstream(ctx, fname)
 	if err != nil {
 		return fmt.Errorf("get upstream: %w", err)
 	}
@@ -27,7 +27,7 @@ func (s Service) Pull(
 			return fmt.Errorf("check existing file: %w", err)
 		}
 	} else {
-		if hash(content) == hash(existing) {
+		if upstream.Hash.EqualString(existing) {
 			return ErrUpToDate
 		}
 	}
@@ -38,7 +38,7 @@ func (s Service) Pull(
 		}
 	}
 
-	if err := s.userfileProvider.WriteFile(ctx, path, content); err != nil {
+	if err := s.userfileProvider.WriteFile(ctx, path, upstream.Content); err != nil {
 		return fmt.Errorf("write file: %w", err)
 	}
 
