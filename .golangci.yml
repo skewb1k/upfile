@@ -6,6 +6,7 @@ linters:
     - dupword
     - funcorder
     - funlen
+    - nlreturn
     - gochecknoglobals
     - gocognit
     - varnamelen
