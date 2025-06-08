@@ -2,57 +2,16 @@ package indexFs
 
 import (
 	"context"
-	"encoding/base64"
-	"path/filepath"
 
 	"github.com/skewb1k/upfile/internal/index"
 )
-
-const (
-	entriesDirname = "entries"
-	byEntry        = "by-entry"
-	byName         = "by-name"
-)
-
-func (p Provider) getPathToEntriesByName(fname string) string {
-	return filepath.Join(
-		p.BaseDir,
-		entriesDirname,
-		byName,
-		filepath.Clean(fname),
-	)
-}
-
-func (p Provider) getPathToFilenamesByEntries(entry string) string {
-	return filepath.Join(
-		p.BaseDir,
-		entriesDirname,
-		byEntry,
-		filepath.Clean(entry),
-	)
-}
-
-func encodePath(path string) string {
-	return base64.URLEncoding.EncodeToString([]byte(path))
-}
-
-//	func decodePath(encoded string) (string, error) {
-//		res, err := base64.URLEncoding.DecodeString(encoded)
-//		if err != nil {
-//			return "", fmt.Errorf("failed to decode base64: %w", err)
-//		}
-//
-//		return string(res), nil
-//	}
 
 func (p Provider) CreateEntry(
 	ctx context.Context,
 	fname string,
 	entry string,
 ) error {
-	encoded := encodePath(entry)
-
-	byEntryPath := p.getPathToFilenamesByEntries(encoded)
+	byEntryPath := p.getPathToFilenamesByEntry(encodePath(entry))
 
 	bydir, err := Load(byEntryPath)
 	if err != nil {
@@ -63,7 +22,10 @@ func (p Provider) CreateEntry(
 		return index.ErrExists
 	}
 
-	byNamePath := p.getPathToEntriesByName(fname)
+	byNamePath, err := p.getPathToEntriesByName(fname)
+	if err != nil {
+		return err
+	}
 
 	byname, err := Load(byNamePath)
 	if err != nil {
@@ -86,7 +48,10 @@ func (p Provider) CreateEntry(
 }
 
 func (p Provider) GetEntriesByFilename(ctx context.Context, fname string) ([]string, error) {
-	byNamePath := p.getPathToEntriesByName(fname)
+	byNamePath, err := p.getPathToEntriesByName(fname)
+	if err != nil {
+		return nil, err
+	}
 
 	byname, err := Load(byNamePath)
 	if err != nil {
@@ -101,9 +66,7 @@ func (p Provider) DeleteEntry(
 	fname string,
 	entry string,
 ) error {
-	encoded := encodePath(entry)
-
-	byEntryPath := p.getPathToFilenamesByEntries(encoded)
+	byEntryPath := p.getPathToFilenamesByEntry(encodePath(entry))
 
 	bydir, err := Load(byEntryPath)
 	if err != nil {
@@ -114,7 +77,10 @@ func (p Provider) DeleteEntry(
 		return index.ErrNotFound
 	}
 
-	byNamePath := p.getPathToEntriesByName(fname)
+	byNamePath, err := p.getPathToEntriesByName(fname)
+	if err != nil {
+		return err
+	}
 
 	byname, err := Load(byNamePath)
 	if err != nil {
@@ -137,7 +103,12 @@ func (p Provider) DeleteEntry(
 }
 
 func (p Provider) CheckEntry(ctx context.Context, fname string, entry string) (bool, error) {
-	byname, err := Load(p.getPathToEntriesByName(fname))
+	byNamePath, err := p.getPathToEntriesByName(fname)
+	if err != nil {
+		return false, err
+	}
+
+	byname, err := Load(byNamePath)
 	if err != nil {
 		return false, err
 	}
@@ -147,13 +118,16 @@ func (p Provider) CheckEntry(ctx context.Context, fname string, entry string) (b
 }
 
 func (p Provider) GetFilenamesByEntry(ctx context.Context, entry string) ([]string, error) {
-	encoded := encodePath(entry)
-	byEntryPath := p.getPathToFilenamesByEntries(encoded)
+	byEntryPath := p.getPathToFilenamesByEntry(encodePath(entry))
 
-	bydir, err := Load(byEntryPath)
+	filenames, err := Load(byEntryPath)
 	if err != nil {
 		return nil, err
 	}
 
-	return bydir.ToSlice(), nil
+	if len(filenames) == 0 {
+		return nil, index.ErrNotFound
+	}
+
+	return filenames.ToSlice(), nil
 }

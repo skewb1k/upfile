@@ -26,14 +26,14 @@ func (s Service) List(
 
 	// TODO: refactor, do not duplicate Status command logic
 	for i, fname := range files {
-		entries, err := s.indexProvider.GetEntriesByFilename(ctx, fname)
-		if err != nil {
-			return nil, fmt.Errorf("get entries by filename: %w", err)
-		}
-
 		upstream, err := s.indexProvider.GetUpstream(ctx, fname)
 		if err != nil {
 			return nil, fmt.Errorf("get upstream: %w", err)
+		}
+
+		entries, err := s.indexProvider.GetEntriesByFilename(ctx, fname)
+		if err != nil {
+			return nil, fmt.Errorf("get entries by filename: %w", err)
 		}
 
 		e := make([]Entry, len(entries))

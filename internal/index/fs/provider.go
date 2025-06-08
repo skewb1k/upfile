@@ -23,10 +23,8 @@ func New(baseDir string) *Provider {
 	}
 }
 
-const upstreamsDirname = "upstreams"
-
 func (p Provider) GetFilenames(ctx context.Context) ([]string, error) {
-	entries, err := os.ReadDir(filepath.Join(p.BaseDir, upstreamsDirname))
+	entries, err := os.ReadDir(p.getUpstreams())
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return nil, nil
@@ -44,13 +42,15 @@ func (p Provider) GetFilenames(ctx context.Context) ([]string, error) {
 }
 
 func (p Provider) SetUpstream(ctx context.Context, fname string, upstream *index.Upstream) error {
-	versionsDir := filepath.Join(p.BaseDir, upstreamsDirname)
+	path, err := p.getPathToUpstream(fname)
+	if err != nil {
+		return err
+	}
 
-	if err := os.MkdirAll(versionsDir, 0o700); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return fmt.Errorf("create versions dir: %w", err)
 	}
 
-	path := filepath.Join(versionsDir, fname)
 	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o600)
 	if err != nil {
 		return fmt.Errorf("open file: %w", err)
@@ -72,7 +72,12 @@ func (p Provider) SetUpstream(ctx context.Context, fname string, upstream *index
 }
 
 func (p Provider) GetUpstream(ctx context.Context, fname string) (index.Upstream, error) {
-	f, err := os.Open(filepath.Join(p.BaseDir, upstreamsDirname, fname))
+	path, err := p.getPathToUpstream(fname)
+	if err != nil {
+		return index.Upstream{}, err
+	}
+
+	f, err := os.Open(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return index.Upstream{}, index.ErrNotFound
@@ -106,7 +111,12 @@ func (p Provider) GetUpstream(ctx context.Context, fname string) (index.Upstream
 }
 
 func (p Provider) CheckUpstream(ctx context.Context, fname string) (bool, error) {
-	if _, err := os.Stat(filepath.Join(p.BaseDir, upstreamsDirname, fname)); err != nil {
+	path, err := p.getPathToUpstream(fname)
+	if err != nil {
+		return false, err
+	}
+
+	if _, err := os.Stat(path); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return false, nil
 		}
@@ -118,7 +128,10 @@ func (p Provider) CheckUpstream(ctx context.Context, fname string) (bool, error)
 }
 
 func (p Provider) DeleteUpstream(ctx context.Context, fname string) error {
-	path := filepath.Join(p.BaseDir, upstreamsDirname, fname)
+	path, err := p.getPathToUpstream(fname)
+	if err != nil {
+		return err
+	}
 
 	if err := os.Remove(path); err != nil {
 		if errors.Is(err, os.ErrNotExist) {

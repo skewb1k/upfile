@@ -16,9 +16,14 @@ func (s Service) Drop(
 	// TODO: collect errors
 	entries, err := s.indexProvider.GetEntriesByFilename(ctx, fname)
 	if err != nil {
+		if errors.Is(err, index.ErrInvalidFilename) {
+			return ErrNotTracked
+		}
+
 		return fmt.Errorf("get entries by filename: %w", err)
 	}
 
+	// FIXME:
 	if len(entries) == 0 {
 		return ErrNoEntries
 	}

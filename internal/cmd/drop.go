@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"path/filepath"
 	"strings"
 
 	"github.com/skewb1k/upfile/internal/service"
@@ -29,8 +28,6 @@ Use with caution. You will be prompted to confirm removal unless --yes is specif
 `),
 
 		RunE: wrap(func(cmd *cobra.Command, s *service.Service, args []string) error {
-			fname := filepath.Base(args[0])
-
 			confirm := func(entries []string) bool {
 				if yes {
 					return true
@@ -48,7 +45,7 @@ Use with caution. You will be prompted to confirm removal unless --yes is specif
 				return strings.ToLower(strings.TrimSpace(input)) == "y"
 			}
 
-			if err := s.Drop(cmd.Context(), fname, confirm); err != nil {
+			if err := s.Drop(cmd.Context(), args[0], confirm); err != nil {
 				return err //nolint: wrapcheck
 			}
 

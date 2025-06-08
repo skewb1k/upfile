@@ -22,13 +22,6 @@ func syncCmd() *cobra.Command {
 		Short: "Sync all entries of file with upstream",
 
 		RunE: wrap(func(cmd *cobra.Command, s *service.Service, args []string) error {
-			// FIXME:
-			// fname, ok := filename.Extract(args[0])
-			// if !ok {
-			// 	return errors.New("invalid")
-			// }
-			fname := args[0]
-
 			confirm := func(entries []string) bool {
 				if yes {
 					return true
@@ -49,7 +42,7 @@ func syncCmd() *cobra.Command {
 				return input == "" || input == "y"
 			}
 
-			if err := s.Sync(cmd.Context(), fname, confirm); err != nil {
+			if err := s.Sync(cmd.Context(), args[0], confirm); err != nil {
 				if errors.Is(err, service.ErrUpToDate) {
 					cmd.Println("Everything up-to-date")
 

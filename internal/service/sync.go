@@ -2,8 +2,11 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"path/filepath"
+
+	"github.com/skewb1k/upfile/internal/index"
 )
 
 func (s Service) Sync(
@@ -13,11 +16,19 @@ func (s Service) Sync(
 ) error {
 	entries, err := s.indexProvider.GetEntriesByFilename(ctx, fname)
 	if err != nil {
+		if errors.Is(err, index.ErrInvalidFilename) {
+			return ErrNotTracked
+		}
+
 		return fmt.Errorf("get entries by filename: %w", err)
 	}
 
 	upstream, err := s.indexProvider.GetUpstream(ctx, fname)
 	if err != nil {
+		if errors.Is(err, index.ErrNotFound) {
+			return ErrNotTracked
+		}
+
 		return fmt.Errorf("get upstream: %w", err)
 	}
 

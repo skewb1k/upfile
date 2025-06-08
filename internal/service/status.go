@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"github.com/skewb1k/upfile/internal/index"
 	"github.com/skewb1k/upfile/internal/userfile"
 )
 
@@ -28,6 +29,10 @@ func (s Service) Status(
 ) ([]Entry, error) {
 	files, err := s.indexProvider.GetFilenamesByEntry(ctx, dir)
 	if err != nil {
+		if errors.Is(err, index.ErrNotFound) {
+			return nil, ErrNoEntries
+		}
+
 		return nil, fmt.Errorf("get files by entry dir: %w", err)
 	}
 

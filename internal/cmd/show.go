@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"path/filepath"
-
 	"github.com/skewb1k/upfile/internal/service"
 
 	"github.com/spf13/cobra"
@@ -14,9 +12,7 @@ func showCmd() *cobra.Command {
 		Short: "Show upstream version of file",
 		Args:  cobra.ExactArgs(1),
 		RunE: wrap(func(cmd *cobra.Command, s *service.Service, args []string) error {
-			fname := filepath.Base(args[0])
-
-			content, err := s.Show(cmd.Context(), fname)
+			content, err := s.Show(cmd.Context(), args[0])
 			if err != nil {
 				return err //nolint: wrapcheck
 			}
