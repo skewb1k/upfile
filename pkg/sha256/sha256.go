@@ -5,13 +5,16 @@ import (
 	"errors"
 )
 
-type SHA256 [32]byte
+const Size = 32
+
+type SHA256 [Size]byte
 
 var ErrInvalidLength = errors.New("invalid length")
 
 func ConvertSlice(hash []byte) (SHA256, error) {
 	var sha SHA256
-	if len(hash) != 32 {
+
+	if len(hash) != Size {
 		return SHA256{}, ErrInvalidLength
 	}
 

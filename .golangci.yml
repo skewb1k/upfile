@@ -4,27 +4,42 @@ linters:
   disable:
     - cyclop
     - dupword
-    - funcorder
+    # - funcorder
     - funlen
     - nlreturn
-    - gochecknoglobals
+    # - gochecknoglobals
     - gocognit
     - varnamelen
-    - mnd
     - gocyclo
     - godot
     - godox
     - maintidx
     - nestif
-    - nilnil
+    - nolintlint
+    # - nilnil
     - recvcheck
     - wsl
   settings:
+    govet:
+      # Enable all analyzers.
+      # Default: false
+      enable-all: true
+      disable:
+        - fieldalignment # too strict
+      # Settings per analyzer.
+      settings:
+        shadow:
+          # Whether to be strict about shadowing; can be noisy.
+          # Default: false
+          strict: true
     exhaustive:
       # Presence of "default" case in switch statements satisfies exhaustiveness,
       # even if all enum members are not listed.
       # Default: false
       default-signifies-exhaustive: true
+      check:
+        - switch
+        - map
     gosec:
       excludes:
         - G104
@@ -35,12 +50,41 @@ linters:
       rules:
         - name: blank-imports
           disabled: true
+    mnd:
+      # List of function patterns to exclude from analysis.
+      # Values always ignored: `time.Date`,
+      # `strconv.FormatInt`, `strconv.FormatUint`, `strconv.FormatFloat`,
+      # `strconv.ParseInt`, `strconv.ParseUint`, `strconv.ParseFloat`.
+      # Default: []
+      ignored-functions:
+        - args.Error
+        - flag.Arg
+        - flag.Duration.*
+        - flag.Float.*
+        - flag.Int.*
+        - flag.Uint.*
+        - os.Chmod
+        - os.Mkdir.*
+        - os.OpenFile
+        - os.WriteFile
+        - prometheus.ExponentialBuckets.*
+        - prometheus.LinearBuckets
+        - tabwriter.NewWriter
+    nakedret:
+      # Make an issue if func has more lines of code than this setting, and it has naked returns.
+      # Default: 30
+      max-func-lines: 0
     forbidigo:
       forbid:
         - pattern: os.IsNotExist
           msg: "use errors.Is(err, os.ErrNotExist) instead of os.IsNotExist"
         - pattern: os.IsExist
           msg: "use errors.Is(err, os.ErrExist) instead of os.IsExist"
+    errcheck:
+      # Report about not checking of errors in type assertions: `a := b.(MyStruct)`.
+      # Such cases aren't reported by default.
+      # Default: false
+      check-type-assertions: true
     depguard:
       rules:
         all:
@@ -51,26 +95,18 @@ linters:
               desc: Please don't use reflect package
             - pkg: io/ioutil
               desc: io/ioutil package has been deprecated
-    wsl:
-      # Allows assignments to be cuddled with variables used in calls on
-      # line above and calls to be cuddled with assignments of variables
-      # used in call on line above.
-      # https://github.com/bombsimon/wsl/blob/HEAD/doc/configuration.md#allow-assign-and-call
-      # Default: true
-      allow-assign-and-call: false
-      # If the number of lines in a case block is equal to or lager than this number,
-      # the case *must* end white a newline.
-      # https://github.com/bombsimon/wsl/blob/HEAD/doc/configuration.md#force-case-trailing-whitespace
-      # Default: 0
-      force-case-trailing-whitespace: 2
-      # Causes an error when an If statement that checks an error variable doesn't
-      # cuddle with the assignment of that variable.
-      # https://github.com/bombsimon/wsl/blob/HEAD/doc/configuration.md#force-err-cuddling
-      # Default: false
-      force-err-cuddling: true
-      # Default: false
-      allow-cuddle-declarations: true
-      allow-trailing-comment: true
+            - pkg: github.com/golang/protobuf
+              desc: Use google.golang.org/protobuf instead, see https://developers.google.com/protocol-buffers/docs/reference/go/faq#modules
+            - pkg: github.com/satori/go.uuid
+              desc: Use github.com/google/uuid instead, satori's package is not maintained
+            - pkg: github.com/gofrs/uuid$
+              desc: Use github.com/gofrs/uuid/v5 or later, it was not a go module before v5
+        "non-main files":
+          files:
+            - "!**/main.go"
+          deny:
+            - pkg: log$
+              desc: Use log/slog instead, see https://go.dev/blog/slog
     tagliatelle:
       case:
         rules:
@@ -80,10 +116,6 @@ linters:
           bson: camel
           avro: snake
           mapstructure: kebab
-    cyclop:
-      # The maximal code complexity to report.
-      # Default: 10
-      max-complexity: 20
     exhaustruct:
       exclude:
         - ^net/http.Client$
@@ -118,6 +150,9 @@ linters:
       - linters:
           - errcheck
         source: "^\\s*defer\\s+"
+      - text: 'shadow: declaration of "(err|ctx)" shadows declaration at'
+        linters:
+          - govet
       - linters:
           - bodyclose
           - dupl
@@ -131,7 +166,5 @@ linters:
         path: _test\.go
 formatters:
   enable:
-    - gofmt
-    # Linter broken, but formatter is fine
-    # - gofumpt
+    - gofumpt
     - goimports

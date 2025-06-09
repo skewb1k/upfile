@@ -54,6 +54,7 @@ func mustFprintf(w io.Writer, format string, a ...any) {
 	}
 }
 
+// nolint: gochecknoglobals
 var (
 	green  = color.New(color.FgGreen).SprintFunc()
 	yellow = color.New(color.FgYellow).SprintFunc()
