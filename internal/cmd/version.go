@@ -7,6 +7,7 @@ import (
 func versionCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:               "version",
+		Aliases:           []string{"v"},
 		Short:             "Print version",
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,

@@ -3,10 +3,11 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"strings"
+	"os"
+	"path/filepath"
 
-	"github.com/skewb1k/upfile/internal/service"
-
+	"github.com/skewb1k/upfile/internal/entries"
+	"github.com/skewb1k/upfile/internal/upstreams"
 	"github.com/spf13/cobra"
 )
 
@@ -21,39 +22,59 @@ func syncCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		Short: "Sync all entries of file with upstream",
 
-		RunE: wrap(func(cmd *cobra.Command, s *service.Service, args []string) error {
-			confirm := func(entries []string) bool {
-				if yes {
-					return true
-				}
+		RunE: func(cmd *cobra.Command, args []string) error {
+			baseDir := getBaseDir()
+			upstreamsProvider := upstreams.NewProvider(baseDir)
+			entriesProvider := entries.NewProvider(baseDir)
 
-				fmt.Println("The following tracked files will be updated:")
-				for _, e := range entries {
-					fmt.Println(" -", e)
-				}
+			fname := args[0]
 
-				fmt.Print("\nProceed? [Y/n]: ")
-
-				var input string
-				_, _ = fmt.Fscanln(cmd.InOrStdin(), &input)
-
-				input = strings.ToLower(strings.TrimSpace(input))
-
-				return input == "" || input == "y"
+			entriesList, err := entriesProvider.GetEntriesByFilename(cmd.Context(), fname)
+			if err != nil {
+				return fmt.Errorf("get entries by filename: %w", err)
 			}
 
-			if err := s.Sync(cmd.Context(), args[0], confirm); err != nil {
-				if errors.Is(err, service.ErrUpToDate) {
-					cmd.Println("Everything up-to-date")
-
-					return nil
+			upstream, err := upstreamsProvider.GetUpstream(cmd.Context(), fname)
+			if err != nil {
+				if errors.Is(err, upstreams.ErrNotFound) {
+					return ErrNotTracked
 				}
 
-				return err //nolint: wrapcheck
+				return fmt.Errorf("get upstream: %w", err)
+			}
+
+			toUpdate := make([]string, 0)
+
+			for _, entryDir := range entriesList {
+				path := filepath.Join(entryDir, fname)
+
+				existing, err := os.ReadFile(path)
+				if err != nil {
+					return err
+				}
+
+				if !upstream.Hash.EqualBytes(existing) {
+					toUpdate = append(toUpdate, filepath.Join(entryDir, fname))
+				}
+			}
+
+			if len(toUpdate) == 0 {
+				return ErrUpToDate
+			}
+
+			if !yes && !ask(cmd.InOrStdin(), toUpdate, true, "The following entries will be updated:") {
+				os.Exit(1)
+				return nil
+			}
+
+			for _, fullPath := range toUpdate {
+				if err := WriteFile(fullPath, upstream.Content); err != nil {
+					return fmt.Errorf("write file: %w", err)
+				}
 			}
 
 			return nil
-		}),
+		},
 	}
 
 	cmd.Flags().BoolVarP(&yes, "yes", "y", false, "Automatic 'yes' to prompts")

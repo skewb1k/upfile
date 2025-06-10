@@ -4,7 +4,6 @@ go 1.24.3
 
 tool (
 	github.com/golangci/golangci-lint/v2/cmd/golangci-lint
-	go.uber.org/mock/mockgen
 	golang.org/x/tools/cmd/goimports
 	gotest.tools/gotestsum
 	mvdan.cc/gofumpt
@@ -14,8 +13,6 @@ require (
 	github.com/fatih/color v1.18.0
 	github.com/ivanpirog/coloredcobra v1.0.1
 	github.com/spf13/cobra v1.9.1
-	github.com/stretchr/testify v1.10.0
-	go.uber.org/mock v0.5.2
 )
 
 require (
@@ -180,6 +177,7 @@ require (
 	github.com/ssgreg/nlreturn/v2 v2.2.1 // indirect
 	github.com/stbenjam/no-sprintf-host-port v0.2.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
+	github.com/stretchr/testify v1.10.0 // indirect
 	github.com/subosito/gotenv v1.4.1 // indirect
 	github.com/tdakkota/asciicheck v0.4.1 // indirect
 	github.com/tetafro/godot v1.5.1 // indirect

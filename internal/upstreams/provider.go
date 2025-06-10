@@ -1,4 +1,4 @@
-package indexFs
+package upstreams
 
 import (
 	"bufio"
@@ -9,15 +9,13 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-
-	"github.com/skewb1k/upfile/internal/index"
 )
 
 type Provider struct {
 	BaseDir string
 }
 
-func New(baseDir string) *Provider {
+func NewProvider(baseDir string) *Provider {
 	return &Provider{
 		BaseDir: baseDir,
 	}
@@ -35,17 +33,17 @@ func (p Provider) GetFilenames(ctx context.Context) ([]string, error) {
 
 	dirs := make([]string, len(entries))
 	for i, entry := range entries {
-		dirs[i] = entry.Name()
+		dirs[i], err = decodePath(entry.Name())
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return dirs, nil
 }
 
-func (p Provider) SetUpstream(ctx context.Context, fname string, upstream *index.Upstream) error {
-	path, err := p.getPathToUpstream(fname)
-	if err != nil {
-		return err
-	}
+func (p Provider) SetUpstream(ctx context.Context, fname string, upstream *Upstream) error {
+	path := p.getPathToUpstream(fname)
 
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return fmt.Errorf("create versions dir: %w", err)
@@ -71,24 +69,22 @@ func (p Provider) SetUpstream(ctx context.Context, fname string, upstream *index
 	return nil
 }
 
-func (p Provider) GetUpstream(ctx context.Context, fname string) (index.Upstream, error) {
-	path, err := p.getPathToUpstream(fname)
-	if err != nil {
-		return index.Upstream{}, err
-	}
+func (p Provider) GetUpstream(ctx context.Context, fname string) (Upstream, error) {
+	path := p.getPathToUpstream(fname)
 
 	f, err := os.Open(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return index.Upstream{}, index.ErrNotFound
+			return Upstream{}, ErrNotFound
 		}
-		return index.Upstream{}, fmt.Errorf("open file: %w", err)
+
+		return Upstream{}, fmt.Errorf("open file: %w", err)
 	}
 	defer f.Close()
 
 	gr, err := gzip.NewReader(f)
 	if err != nil {
-		return index.Upstream{}, fmt.Errorf("gzip reader: %w", err)
+		return Upstream{}, fmt.Errorf("gzip reader: %w", err)
 	}
 	defer gr.Close()
 
@@ -96,25 +92,22 @@ func (p Provider) GetUpstream(ctx context.Context, fname string) (index.Upstream
 
 	var hash [32]byte
 	if _, err := io.ReadFull(r, hash[:]); err != nil {
-		return index.Upstream{}, fmt.Errorf("read hash: %w", err)
+		return Upstream{}, fmt.Errorf("read hash: %w", err)
 	}
 
 	content, err := io.ReadAll(r)
 	if err != nil {
-		return index.Upstream{}, fmt.Errorf("read content: %w", err)
+		return Upstream{}, fmt.Errorf("read content: %w", err)
 	}
 
-	return index.Upstream{
+	return Upstream{
 		Hash:    hash,
 		Content: string(content),
 	}, nil
 }
 
 func (p Provider) CheckUpstream(ctx context.Context, fname string) (bool, error) {
-	path, err := p.getPathToUpstream(fname)
-	if err != nil {
-		return false, err
-	}
+	path := p.getPathToUpstream(fname)
 
 	if _, err := os.Stat(path); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
@@ -128,14 +121,11 @@ func (p Provider) CheckUpstream(ctx context.Context, fname string) (bool, error)
 }
 
 func (p Provider) DeleteUpstream(ctx context.Context, fname string) error {
-	path, err := p.getPathToUpstream(fname)
-	if err != nil {
-		return err
-	}
+	path := p.getPathToUpstream(fname)
 
 	if err := os.Remove(path); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return index.ErrNotFound
+			return ErrNotFound
 		}
 
 		return fmt.Errorf("delete file: %w", err)

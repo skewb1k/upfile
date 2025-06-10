@@ -1,4 +1,4 @@
-package service
+package cmd
 
 import (
 	"errors"
@@ -10,5 +10,6 @@ var (
 	ErrFileNotFound   = errors.New("file not found")
 	ErrUpToDate       = errors.New("up to date")
 	ErrNoEntries      = errors.New("no file entries")
-	ErrCancelled      = errors.New("cancelled")
+	// ErrInvalidFilename = errors.New("invalid filename")
+	// ErrCancelled      = errors.New("cancelled")
 )

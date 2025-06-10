@@ -16,8 +16,9 @@ const name = "upfile"
 var version = "unknown"
 
 func Main(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int {
-	rootCmd := &cobra.Command{
-		Use: name,
+	cmd := &cobra.Command{
+		Use:     name,
+		Version: version + "\n",
 		Short: `
 Track and sync files across projects
 
@@ -26,10 +27,12 @@ Support project on Github: https://github.com/skewb1k/upfile
 		SilenceUsage:  true,
 		SilenceErrors: false,
 	}
-	rootCmd.SetErrPrefix(red("error:"))
+
+	cmd.SetVersionTemplate("{{.Version}}")
+	cmd.SetErrPrefix(red("error:"))
 
 	cc.Init(&cc.Config{
-		RootCmd:         rootCmd,
+		RootCmd:         cmd,
 		Headings:        cc.HiCyan + cc.Bold + cc.Underline,
 		Commands:        cc.HiYellow + cc.Bold,
 		Example:         cc.Italic,
@@ -38,24 +41,26 @@ Support project on Github: https://github.com/skewb1k/upfile
 		NoExtraNewlines: true,
 	})
 
-	rootCmd.SetArgs(args)
-	rootCmd.SetIn(stdin)
-	rootCmd.SetOut(stdout)
-	rootCmd.SetErr(stderr)
+	cmd.SetArgs(args)
+	cmd.SetIn(stdin)
+	cmd.SetOut(stdout)
+	cmd.SetErr(stderr)
 
-	rootCmd.AddCommand(versionCmd())
-	rootCmd.AddCommand(addCmd())
-	rootCmd.AddCommand(removeCmd())
-	rootCmd.AddCommand(diffCmd())
-	rootCmd.AddCommand(showCmd())
-	rootCmd.AddCommand(listCmd())
-	rootCmd.AddCommand(statusCmd())
-	rootCmd.AddCommand(pullCmd())
-	rootCmd.AddCommand(pushCmd())
-	rootCmd.AddCommand(syncCmd())
-	rootCmd.AddCommand(dropCmd())
+	cmd.AddCommand(
+		versionCmd(),
+		addCmd(),
+		removeCmd(),
+		diffCmd(),
+		showCmd(),
+		listCmd(),
+		statusCmd(),
+		pullCmd(),
+		pushCmd(),
+		syncCmd(),
+		dropCmd(),
+	)
 
-	if err := rootCmd.Execute(); err != nil {
+	if err := cmd.Execute(); err != nil {
 		var exitError *exec.ExitError
 		if errors.As(err, &exitError) {
 			return exitError.ExitCode()

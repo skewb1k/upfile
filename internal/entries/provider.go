@@ -1,17 +1,25 @@
-package indexFs
+package entries
 
 import (
 	"context"
-
-	"github.com/skewb1k/upfile/internal/index"
 )
+
+type Provider struct {
+	BaseDir string
+}
+
+func NewProvider(baseDir string) *Provider {
+	return &Provider{
+		BaseDir: baseDir,
+	}
+}
 
 func (p Provider) CreateEntry(
 	ctx context.Context,
 	fname string,
 	entry string,
 ) error {
-	byEntryPath := p.getPathToFilenamesByEntry(encodePath(entry))
+	byEntryPath := p.getPathToFilenamesByEntry(entry)
 
 	bydir, err := Load(byEntryPath)
 	if err != nil {
@@ -19,13 +27,10 @@ func (p Provider) CreateEntry(
 	}
 
 	if !bydir.Add(fname) {
-		return index.ErrExists
+		return ErrExists
 	}
 
-	byNamePath, err := p.getPathToEntriesByName(fname)
-	if err != nil {
-		return err
-	}
+	byNamePath := p.getPathToEntriesByName(fname)
 
 	byname, err := Load(byNamePath)
 	if err != nil {
@@ -33,7 +38,7 @@ func (p Provider) CreateEntry(
 	}
 
 	if !byname.Add(entry) {
-		return index.ErrExists
+		return ErrExists
 	}
 
 	if err := byname.Save(byNamePath); err != nil {
@@ -48,10 +53,7 @@ func (p Provider) CreateEntry(
 }
 
 func (p Provider) GetEntriesByFilename(ctx context.Context, fname string) ([]string, error) {
-	byNamePath, err := p.getPathToEntriesByName(fname)
-	if err != nil {
-		return nil, err
-	}
+	byNamePath := p.getPathToEntriesByName(fname)
 
 	byname, err := Load(byNamePath)
 	if err != nil {
@@ -66,7 +68,7 @@ func (p Provider) DeleteEntry(
 	fname string,
 	entry string,
 ) error {
-	byEntryPath := p.getPathToFilenamesByEntry(encodePath(entry))
+	byEntryPath := p.getPathToFilenamesByEntry(entry)
 
 	bydir, err := Load(byEntryPath)
 	if err != nil {
@@ -74,13 +76,10 @@ func (p Provider) DeleteEntry(
 	}
 
 	if !bydir.Delete(fname) {
-		return index.ErrNotFound
+		return ErrNotFound
 	}
 
-	byNamePath, err := p.getPathToEntriesByName(fname)
-	if err != nil {
-		return err
-	}
+	byNamePath := p.getPathToEntriesByName(fname)
 
 	byname, err := Load(byNamePath)
 	if err != nil {
@@ -88,7 +87,7 @@ func (p Provider) DeleteEntry(
 	}
 
 	if !byname.Delete(entry) {
-		return index.ErrNotFound
+		return ErrNotFound
 	}
 
 	if err := byname.Save(byNamePath); err != nil {
@@ -103,10 +102,7 @@ func (p Provider) DeleteEntry(
 }
 
 func (p Provider) CheckEntry(ctx context.Context, fname string, entry string) (bool, error) {
-	byNamePath, err := p.getPathToEntriesByName(fname)
-	if err != nil {
-		return false, err
-	}
+	byNamePath := p.getPathToEntriesByName(fname)
 
 	byname, err := Load(byNamePath)
 	if err != nil {
@@ -118,7 +114,7 @@ func (p Provider) CheckEntry(ctx context.Context, fname string, entry string) (b
 }
 
 func (p Provider) GetFilenamesByEntry(ctx context.Context, entry string) ([]string, error) {
-	byEntryPath := p.getPathToFilenamesByEntry(encodePath(entry))
+	byEntryPath := p.getPathToFilenamesByEntry(entry)
 
 	filenames, err := Load(byEntryPath)
 	if err != nil {
@@ -126,7 +122,7 @@ func (p Provider) GetFilenamesByEntry(ctx context.Context, entry string) ([]stri
 	}
 
 	if len(filenames) == 0 {
-		return nil, index.ErrNotFound
+		return nil, ErrNotFound
 	}
 
 	return filenames.ToSlice(), nil

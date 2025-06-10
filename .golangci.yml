@@ -80,6 +80,9 @@ linters:
           msg: "use errors.Is(err, os.ErrNotExist) instead of os.IsNotExist"
         - pattern: os.IsExist
           msg: "use errors.Is(err, os.ErrExist) instead of os.IsExist"
+    wrapcheck:
+      extra-ignore-sigs:
+        - os.ReadFile(
     errcheck:
       # Report about not checking of errors in type assertions: `a := b.(MyStruct)`.
       # Such cases aren't reported by default.

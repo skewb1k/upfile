@@ -1,17 +1,14 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
-
-	indexFs "github.com/skewb1k/upfile/internal/index/fs"
-	"github.com/skewb1k/upfile/internal/service"
-	userfileFs "github.com/skewb1k/upfile/internal/userfile/fs"
+	"strings"
 
 	"github.com/fatih/color"
+	"github.com/skewb1k/upfile/internal/upstreams"
 	"github.com/spf13/cobra"
 )
 
@@ -32,21 +29,21 @@ func getBaseDir() string {
 	return filepath.Join(home, ".local", "share", name)
 }
 
-func wrap(f func(
-	cmd *cobra.Command,
-	s *service.Service,
-	args []string,
-) error,
-) func(cmd *cobra.Command, args []string) error {
-	return func(cmd *cobra.Command, args []string) error {
-		err := f(cmd, service.New(indexFs.New(getBaseDir()), userfileFs.New()), args)
-		if errors.Is(err, service.ErrCancelled) {
-			os.Exit(1)
-		}
-
-		return err
-	}
-}
+// func wrap(f func(
+// 	cmd *cobra.Command,
+// 	s *service.Service,
+// 	args []string,
+// ) error,
+// ) func(cmd *cobra.Command, args []string) error {
+// 	return func(cmd *cobra.Command, args []string) error {
+// 		err := f(cmd, service.New(indexFs.New(getBaseDir()), userfileFs.New()), args)
+// 		if errors.Is(err, service.ErrCancelled) {
+// 			os.Exit(1)
+// 		}
+//
+// 		return err
+// 	}
+// }
 
 func mustFprintf(w io.Writer, format string, a ...any) {
 	if _, err := fmt.Fprintf(w, format, a...); err != nil {
@@ -61,13 +58,13 @@ var (
 	red    = color.New(color.FgRed).SprintFunc()
 )
 
-func statusAsString(status service.EntryStatus) string {
+func statusAsString(status EntryStatus) string {
 	switch status {
-	case service.EntryStatusModified:
+	case EntryStatusModified:
 		return yellow("Modified")
-	case service.EntryStatusUpToDate:
+	case EntryStatusUpToDate:
 		return green("Up-to-date")
-	case service.EntryStatusDeleted:
+	case EntryStatusDeleted:
 		return red("Deleted")
 	default:
 		panic("UNEXPECTED")
@@ -83,9 +80,8 @@ func completeFname(
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
-	files, err := service.New(
-		indexFs.New(getBaseDir()), userfileFs.New(),
-	).ListTrackedFilenames(cmd.Context())
+	upstreamsProvider := upstreams.NewProvider(getBaseDir())
+	files, err := upstreamsProvider.GetFilenames(cmd.Context())
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveError
 	}
@@ -95,4 +91,27 @@ func completeFname(
 
 func doc(s string) string {
 	return s[1:]
+}
+
+func ask(stdin io.Reader, list []string, defaultYes bool, msg string) bool {
+	fmt.Println(msg)
+	for _, e := range list {
+		fmt.Println(" -", e)
+	}
+	if defaultYes {
+		fmt.Print("\nProceed? [Y/n]: ")
+	} else {
+		fmt.Print("\nProceed? [y/N]: ")
+	}
+
+	var input string
+	_, _ = fmt.Fscanln(stdin, &input)
+
+	input = strings.ToLower(strings.TrimSpace(input))
+
+	if defaultYes && input == "" {
+		return true
+	}
+
+	return input == "y"
 }

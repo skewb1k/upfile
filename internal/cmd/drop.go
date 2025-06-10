@@ -1,11 +1,12 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
-	"strings"
+	"os"
 
-	"github.com/skewb1k/upfile/internal/service"
-
+	"github.com/skewb1k/upfile/internal/entries"
+	"github.com/skewb1k/upfile/internal/upstreams"
 	"github.com/spf13/cobra"
 )
 
@@ -26,31 +27,49 @@ Note: This does NOT delete any actual files from user-space filesystem.
 
 Use with caution. You will be prompted to confirm removal unless --yes is specified.
 `),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			baseDir := getBaseDir()
+			upstreamsProvider := upstreams.NewProvider(baseDir)
+			entriesProvider := entries.NewProvider(baseDir)
 
-		RunE: wrap(func(cmd *cobra.Command, s *service.Service, args []string) error {
-			confirm := func(entries []string) bool {
-				if yes {
-					return true
+			fname := args[0]
+
+			// TODO: collect errors
+			e, err := entriesProvider.GetEntriesByFilename(cmd.Context(), fname)
+			if err != nil {
+				if errors.Is(err, entries.ErrInvalidFilename) {
+					return ErrNotTracked
 				}
 
-				fmt.Println("The following files will be untracked and removed from UpFile:")
-				for _, e := range entries {
-					fmt.Println(" -", e)
-				}
-				fmt.Print("\nProceed? [y/N]: ")
-
-				var input string
-				_, _ = fmt.Fscanln(cmd.InOrStdin(), &input)
-
-				return strings.ToLower(strings.TrimSpace(input)) == "y"
+				return fmt.Errorf("get entries by filename: %w", err)
 			}
 
-			if err := s.Drop(cmd.Context(), args[0], confirm); err != nil {
-				return err //nolint: wrapcheck
+			// FIXME:
+			if len(e) == 0 {
+				return ErrNoEntries
+			}
+
+			if !yes && !ask(cmd.InOrStdin(), e, false, "The following entries will be untracked:") {
+				os.Exit(1)
+				return nil
+			}
+
+			if err := upstreamsProvider.DeleteUpstream(cmd.Context(), fname); err != nil {
+				if errors.Is(err, upstreams.ErrNotFound) {
+					return ErrNotTracked
+				}
+
+				return fmt.Errorf("delete upstream: %w", err)
+			}
+
+			for _, entry := range e {
+				if err := entriesProvider.DeleteEntry(cmd.Context(), fname, entry); err != nil {
+					return fmt.Errorf("delete entry: %w", err)
+				}
 			}
 
 			return nil
-		}),
+		},
 	}
 
 	cmd.Flags().BoolVarP(&yes, "yes", "y", false, "Automatic 'yes' to prompts")

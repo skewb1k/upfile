@@ -1,4 +1,4 @@
-package indexFs
+package entries
 
 import (
 	"bufio"

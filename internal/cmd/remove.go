@@ -1,11 +1,11 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"path/filepath"
 
-	"github.com/skewb1k/upfile/internal/service"
-
+	"github.com/skewb1k/upfile/internal/entries"
 	"github.com/spf13/cobra"
 )
 
@@ -15,19 +15,26 @@ func removeCmd() *cobra.Command {
 		Short:   "Remove entry from tracked list",
 		Aliases: []string{"rm"},
 		Args:    cobra.ExactArgs(1),
-		RunE: wrap(func(cmd *cobra.Command, s *service.Service, args []string) error {
+		RunE: func(cmd *cobra.Command, args []string) error {
+			baseDir := getBaseDir()
+			entriesProvider := entries.NewProvider(baseDir)
+
 			path, err := filepath.Abs(args[0])
 			if err != nil {
 				return fmt.Errorf("failed to get abs path to file: %w", err)
 			}
 
-			if err := s.Remove(cmd.Context(), path); err != nil {
-				return err //nolint: wrapcheck
+			entryDir, fname := filepath.Dir(path), filepath.Base(path)
+
+			if err := entriesProvider.DeleteEntry(cmd.Context(), fname, entryDir); err != nil {
+				if errors.Is(err, entries.ErrNotFound) {
+					return ErrNotTracked
+				}
+
+				return fmt.Errorf("delete entry: %w", err)
 			}
 
-			cmd.Printf("Removed: %s\n", path)
-
 			return nil
-		}),
+		},
 	}
 }
