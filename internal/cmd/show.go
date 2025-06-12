@@ -1,39 +1,41 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"io"
 
-	"github.com/skewb1k/upfile/internal/upstreams"
+	"github.com/skewb1k/upfile/internal/service"
+	"github.com/skewb1k/upfile/internal/store"
 	"github.com/spf13/cobra"
 )
 
 func showCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "show <filename>",
-		Short: "Show upstream version of file",
-		Args:  cobra.ExactArgs(1),
+		Use:               "show <filename>",
+		Short:             "Show upstream version of file",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeFname,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			baseDir := getBaseDir()
-			upstreamsProvider := upstreams.NewProvider(baseDir)
-
-			fname := args[0]
-
-			upstream, err := upstreamsProvider.GetUpstream(cmd.Context(), fname)
-			if err != nil {
-				// if errors.Is(err, index.ErrNotFound) || errors.Is(err, index.ErrInvalidFilename) {
-				// 	return ErrNotTracked
-				// }
-				//
-				return fmt.Errorf("get upstream: %w", err)
-			}
-
-			cmd.Print(upstream.Content)
-
-			return nil
+			return Show(cmd.Context(), service.New(store.New(getBaseDir())), cmd.OutOrStdout(), args[0])
 		},
 	}
 
-	cmd.ValidArgsFunction = completeFname
-
 	return cmd
+}
+
+func Show(
+	ctx context.Context,
+	s *service.Service,
+	out io.Writer,
+	fname string,
+) error {
+	content, err := s.CatLatest(ctx, fname)
+	if err != nil {
+		return fmt.Errorf("cat: %w", err)
+	}
+
+	mustFprintf(out, "%s", content)
+
+	return nil
 }

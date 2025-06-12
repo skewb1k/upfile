@@ -7,8 +7,7 @@ import (
 	"path/filepath"
 	"text/tabwriter"
 
-	"github.com/skewb1k/upfile/internal/entries"
-	"github.com/skewb1k/upfile/internal/upstreams"
+	"github.com/skewb1k/upfile/internal/service"
 	"github.com/spf13/cobra"
 )
 
@@ -37,12 +36,8 @@ func listCmd() *cobra.Command {
 		Short:   "List tracked files",
 		Aliases: []string{"ls"},
 		Args:    cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			baseDir := getBaseDir()
-			upstreamsProvider := upstreams.NewProvider(baseDir)
-			entriesProvider := entries.NewProvider(baseDir)
-
-			files, err := upstreamsProvider.GetFilenames(cmd.Context())
+		RunE: wrap(func(cmd *cobra.Command, s *service.Service, args []string) error {
+			files, err := s.GetFilenames(cmd.Context())
 			if err != nil {
 				return fmt.Errorf("get files: %w", err)
 			}
@@ -51,12 +46,17 @@ func listCmd() *cobra.Command {
 
 			// TODO: refactor, do not duplicate Status command logic
 			for i, fname := range files {
-				upstream, err := upstreamsProvider.GetUpstream(cmd.Context(), fname)
+				head, err := s.GetHead(cmd.Context(), fname)
 				if err != nil {
-					return fmt.Errorf("get upstream: %w", err)
+					return fmt.Errorf("get head: %w", err)
 				}
 
-				entriesList, err := entriesProvider.GetEntriesByFilename(cmd.Context(), fname)
+				headCommit, err := s.GetCommit(cmd.Context(), head)
+				if err != nil {
+					return fmt.Errorf("get commit: %w", err)
+				}
+
+				entriesList, err := s.GetEntriesByFilename(cmd.Context(), fname)
 				if err != nil {
 					return fmt.Errorf("get entries by filename: %w", err)
 				}
@@ -81,7 +81,7 @@ func listCmd() *cobra.Command {
 						} else {
 							res[i].Entries[j].Err = err
 						}
-					} else if !upstream.Hash.EqualBytes(existing) {
+					} else if !headCommit.ContentHash.EqualBytes(existing) {
 						res[i].Entries[j].Status = EntryStatusModified
 					}
 				}
@@ -99,11 +99,10 @@ func listCmd() *cobra.Command {
 
 				// TODO: fix alignment and refactor
 				for _, entry := range f.Entries {
-					fn := entry.Path
 					if entry.Err != nil {
-						mustFprintf(w, red("\t%s\t%s\n"), fn, errors.Unwrap(entry.Err).Error())
+						mustFprintf(w, red("\t%s\t%s\n"), entry.Path, errors.Unwrap(entry.Err).Error())
 					} else {
-						mustFprintf(w, "\t%s\t%s\n", fn, statusAsString(entry.Status))
+						mustFprintf(w, "\t%s\t%s\n", entry.Path, statusAsString(entry.Status))
 					}
 				}
 
@@ -113,7 +112,7 @@ func listCmd() *cobra.Command {
 			}
 
 			return nil
-		},
+		}),
 	}
 
 	return cmd

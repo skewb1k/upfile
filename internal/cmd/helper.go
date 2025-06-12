@@ -8,7 +8,8 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/skewb1k/upfile/internal/upstreams"
+	"github.com/skewb1k/upfile/internal/service"
+	"github.com/skewb1k/upfile/internal/store"
 	"github.com/spf13/cobra"
 )
 
@@ -29,21 +30,21 @@ func getBaseDir() string {
 	return filepath.Join(home, ".local", "share", name)
 }
 
-// func wrap(f func(
-// 	cmd *cobra.Command,
-// 	s *service.Service,
-// 	args []string,
-// ) error,
-// ) func(cmd *cobra.Command, args []string) error {
-// 	return func(cmd *cobra.Command, args []string) error {
-// 		err := f(cmd, service.New(indexFs.New(getBaseDir()), userfileFs.New()), args)
-// 		if errors.Is(err, service.ErrCancelled) {
-// 			os.Exit(1)
-// 		}
-//
-// 		return err
-// 	}
-// }
+func wrap(f func(
+	cmd *cobra.Command,
+	s *service.Service,
+	args []string,
+) error,
+) func(cmd *cobra.Command, args []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		err := f(cmd, service.New(store.New(getBaseDir())), args)
+		// if errors.Is(err, service.ErrCancelled) {
+		// 	os.Exit(1)
+		// }
+
+		return err
+	}
+}
 
 func mustFprintf(w io.Writer, format string, a ...any) {
 	if _, err := fmt.Fprintf(w, format, a...); err != nil {
@@ -74,14 +75,15 @@ func statusAsString(status EntryStatus) string {
 func completeFname(
 	cmd *cobra.Command,
 	args []string,
-	toComplete string,
+	input string,
 ) ([]string, cobra.ShellCompDirective) {
 	if len(args) >= 1 {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
-	upstreamsProvider := upstreams.NewProvider(getBaseDir())
-	files, err := upstreamsProvider.GetFilenames(cmd.Context())
+	s := service.New(store.New(getBaseDir()))
+
+	files, err := s.GetFilenames(cmd.Context())
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveError
 	}

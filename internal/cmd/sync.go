@@ -1,13 +1,11 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 
-	"github.com/skewb1k/upfile/internal/entries"
-	"github.com/skewb1k/upfile/internal/upstreams"
+	"github.com/skewb1k/upfile/internal/service"
 	"github.com/spf13/cobra"
 )
 
@@ -21,26 +19,27 @@ func syncCmd() *cobra.Command {
 		Use:   "sync <filename>",
 		Args:  cobra.ExactArgs(1),
 		Short: "Sync all entries of file with upstream",
-
-		RunE: func(cmd *cobra.Command, args []string) error {
-			baseDir := getBaseDir()
-			upstreamsProvider := upstreams.NewProvider(baseDir)
-			entriesProvider := entries.NewProvider(baseDir)
-
+		RunE: wrap(func(cmd *cobra.Command, s *service.Service, args []string) error {
 			fname := args[0]
 
-			entriesList, err := entriesProvider.GetEntriesByFilename(cmd.Context(), fname)
+			entriesList, err := s.GetEntriesByFilename(cmd.Context(), fname)
 			if err != nil {
 				return fmt.Errorf("get entries by filename: %w", err)
 			}
 
-			upstream, err := upstreamsProvider.GetUpstream(cmd.Context(), fname)
+			head, err := s.GetHead(cmd.Context(), fname)
 			if err != nil {
-				if errors.Is(err, upstreams.ErrNotFound) {
-					return ErrNotTracked
-				}
+				return fmt.Errorf("get head: %w", err)
+			}
 
-				return fmt.Errorf("get upstream: %w", err)
+			headCommit, err := s.GetCommit(cmd.Context(), head)
+			if err != nil {
+				return fmt.Errorf("get commit: %w", err)
+			}
+
+			content, err := s.GetBlob(cmd.Context(), headCommit.ContentHash)
+			if err != nil {
+				return fmt.Errorf("get blob: %w", err)
 			}
 
 			toUpdate := make([]string, 0)
@@ -53,7 +52,7 @@ func syncCmd() *cobra.Command {
 					return err
 				}
 
-				if !upstream.Hash.EqualBytes(existing) {
+				if !headCommit.ContentHash.EqualBytes(existing) {
 					toUpdate = append(toUpdate, filepath.Join(entryDir, fname))
 				}
 			}
@@ -68,13 +67,13 @@ func syncCmd() *cobra.Command {
 			}
 
 			for _, fullPath := range toUpdate {
-				if err := WriteFile(fullPath, upstream.Content); err != nil {
+				if err := WriteFile(fullPath, content); err != nil {
 					return fmt.Errorf("write file: %w", err)
 				}
 			}
 
 			return nil
-		},
+		}),
 	}
 
 	cmd.Flags().BoolVarP(&yes, "yes", "y", false, "Automatic 'yes' to prompts")

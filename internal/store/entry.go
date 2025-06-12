@@ -1,25 +1,15 @@
-package entries
+package store
 
 import (
 	"context"
 )
 
-type Provider struct {
-	BaseDir string
-}
-
-func NewProvider(baseDir string) *Provider {
-	return &Provider{
-		BaseDir: baseDir,
-	}
-}
-
-func (p Provider) CreateEntry(
+func (s Store) CreateEntry(
 	ctx context.Context,
 	fname string,
 	entry string,
 ) error {
-	byEntryPath := p.getPathToFilenamesByEntry(entry)
+	byEntryPath := s.getPathToFilenamesByEntry(entry)
 
 	bydir, err := Load(byEntryPath)
 	if err != nil {
@@ -30,7 +20,7 @@ func (p Provider) CreateEntry(
 		return ErrExists
 	}
 
-	byNamePath := p.getPathToEntriesByName(fname)
+	byNamePath := s.getPathToEntriesByName(fname)
 
 	byname, err := Load(byNamePath)
 	if err != nil {
@@ -52,8 +42,8 @@ func (p Provider) CreateEntry(
 	return nil
 }
 
-func (p Provider) GetEntriesByFilename(ctx context.Context, fname string) ([]string, error) {
-	byNamePath := p.getPathToEntriesByName(fname)
+func (s Store) GetEntriesByFilename(ctx context.Context, fname string) ([]string, error) {
+	byNamePath := s.getPathToEntriesByName(fname)
 
 	byname, err := Load(byNamePath)
 	if err != nil {
@@ -63,12 +53,12 @@ func (p Provider) GetEntriesByFilename(ctx context.Context, fname string) ([]str
 	return byname.ToSlice(), nil
 }
 
-func (p Provider) DeleteEntry(
+func (s Store) DeleteEntry(
 	ctx context.Context,
 	fname string,
 	entry string,
 ) error {
-	byEntryPath := p.getPathToFilenamesByEntry(entry)
+	byEntryPath := s.getPathToFilenamesByEntry(entry)
 
 	bydir, err := Load(byEntryPath)
 	if err != nil {
@@ -79,7 +69,7 @@ func (p Provider) DeleteEntry(
 		return ErrNotFound
 	}
 
-	byNamePath := p.getPathToEntriesByName(fname)
+	byNamePath := s.getPathToEntriesByName(fname)
 
 	byname, err := Load(byNamePath)
 	if err != nil {
@@ -101,8 +91,8 @@ func (p Provider) DeleteEntry(
 	return nil
 }
 
-func (p Provider) CheckEntry(ctx context.Context, fname string, entry string) (bool, error) {
-	byNamePath := p.getPathToEntriesByName(fname)
+func (s Store) CheckEntry(ctx context.Context, fname string, entry string) (bool, error) {
+	byNamePath := s.getPathToEntriesByName(fname)
 
 	byname, err := Load(byNamePath)
 	if err != nil {
@@ -113,8 +103,8 @@ func (p Provider) CheckEntry(ctx context.Context, fname string, entry string) (b
 	return exists, nil
 }
 
-func (p Provider) GetFilenamesByEntry(ctx context.Context, entry string) ([]string, error) {
-	byEntryPath := p.getPathToFilenamesByEntry(entry)
+func (s Store) GetFilenamesByEntry(ctx context.Context, entry string) ([]string, error) {
+	byEntryPath := s.getPathToFilenamesByEntry(entry)
 
 	filenames, err := Load(byEntryPath)
 	if err != nil {

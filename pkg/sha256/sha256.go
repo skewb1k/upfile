@@ -31,7 +31,7 @@ func (h SHA256) EqualBytes(s []byte) bool {
 	return h == FromBytes(s)
 }
 
-func (h SHA256) String() string {
+func (h SHA256) Hex() string {
 	return hex.EncodeToString(h[:])
 }
 

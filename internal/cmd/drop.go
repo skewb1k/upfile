@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/skewb1k/upfile/internal/entries"
-	"github.com/skewb1k/upfile/internal/upstreams"
+	"github.com/skewb1k/upfile/internal/service"
+	"github.com/skewb1k/upfile/internal/store"
 	"github.com/spf13/cobra"
 )
 
@@ -27,17 +27,13 @@ Note: This does NOT delete any actual files from user-space filesystem.
 
 Use with caution. You will be prompted to confirm removal unless --yes is specified.
 `),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			baseDir := getBaseDir()
-			upstreamsProvider := upstreams.NewProvider(baseDir)
-			entriesProvider := entries.NewProvider(baseDir)
-
+		RunE: wrap(func(cmd *cobra.Command, s *service.Service, args []string) error {
 			fname := args[0]
 
 			// TODO: collect errors
-			e, err := entriesProvider.GetEntriesByFilename(cmd.Context(), fname)
+			e, err := s.GetEntriesByFilename(cmd.Context(), fname)
 			if err != nil {
-				if errors.Is(err, entries.ErrInvalidFilename) {
+				if errors.Is(err, store.ErrInvalidFilename) {
 					return ErrNotTracked
 				}
 
@@ -54,8 +50,8 @@ Use with caution. You will be prompted to confirm removal unless --yes is specif
 				return nil
 			}
 
-			if err := upstreamsProvider.DeleteUpstream(cmd.Context(), fname); err != nil {
-				if errors.Is(err, upstreams.ErrNotFound) {
+			if err := s.DeleteUpstream(cmd.Context(), fname); err != nil {
+				if errors.Is(err, store.ErrNotFound) {
 					return ErrNotTracked
 				}
 
@@ -63,13 +59,13 @@ Use with caution. You will be prompted to confirm removal unless --yes is specif
 			}
 
 			for _, entry := range e {
-				if err := entriesProvider.DeleteEntry(cmd.Context(), fname, entry); err != nil {
+				if err := s.DeleteEntry(cmd.Context(), fname, entry); err != nil {
 					return fmt.Errorf("delete entry: %w", err)
 				}
 			}
 
 			return nil
-		},
+		}),
 	}
 
 	cmd.Flags().BoolVarP(&yes, "yes", "y", false, "Automatic 'yes' to prompts")

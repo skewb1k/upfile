@@ -1,12 +1,16 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
-	"github.com/skewb1k/upfile/internal/entries"
-	"github.com/skewb1k/upfile/internal/upstreams"
+	"github.com/skewb1k/upfile/internal/commit"
+	"github.com/skewb1k/upfile/internal/service"
+	"github.com/skewb1k/upfile/internal/store"
+	"github.com/skewb1k/upfile/pkg/sha256"
 	"github.com/spf13/cobra"
 )
 
@@ -15,40 +19,60 @@ func addCmd() *cobra.Command {
 		Use:   "add <path>",
 		Short: "Add a file to be tracked",
 		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: wrap(func(cmd *cobra.Command, s *service.Service, args []string) error {
 			path, err := filepath.Abs(args[0])
 			if err != nil {
 				return fmt.Errorf("failed to get abs path to file: %w", err)
 			}
-
-			baseDir := getBaseDir()
-			upstreamsProvider := upstreams.NewProvider(baseDir)
-			entriesProvider := entries.NewProvider(baseDir)
 
 			content, err := os.ReadFile(path)
 			if err != nil {
 				return err
 			}
 
-			fname, entryDir := filepath.Base(path), filepath.Dir(path)
+			fname, entry := filepath.Base(path), filepath.Dir(path)
 
-			if err := entriesProvider.CreateEntry(cmd.Context(), fname, entryDir); err != nil {
+			if err := s.CreateEntry(cmd.Context(), fname, entry); err != nil {
+				if errors.Is(err, store.ErrExists) {
+					return ErrAlreadyTracked
+				}
+
 				return fmt.Errorf("create entry: %w", err)
 			}
 
-			upstreamExists, err := upstreamsProvider.CheckUpstream(cmd.Context(), fname)
+			headExists, err := s.CheckHead(cmd.Context(), fname)
 			if err != nil {
-				return fmt.Errorf("check upstream: %w", err)
+				return fmt.Errorf("check head: %w", err)
 			}
 
-			if !upstreamExists {
-				if err := upstreamsProvider.SetUpstream(cmd.Context(), fname, upstreams.NewUpstream(string(content))); err != nil {
-					return fmt.Errorf("set upstream: %w", err)
+			if !headExists {
+				// file was not tracked, create first commit
+
+				contentHash := sha256.FromBytes(content)
+				if err := s.SaveBlob(cmd.Context(), contentHash, content); err != nil {
+					// TODO: handle conflict
+					return fmt.Errorf("save blob: %w", err)
+				}
+
+				c := &commit.Commit{
+					Filename:    fname,
+					ContentHash: contentHash,
+					Parent:      nil,
+					Timestamp:   time.Now(),
+				}
+				commitHash := c.HashCommit()
+
+				if err := s.SaveCommit(cmd.Context(), commitHash, c); err != nil {
+					return fmt.Errorf("save commit: %w", err)
+				}
+
+				if err := s.SetHead(cmd.Context(), fname, commitHash); err != nil {
+					return fmt.Errorf("set head: %w", err)
 				}
 			}
 
 			return nil
-		},
+		}),
 	}
 
 	return cmd

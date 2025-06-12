@@ -1,4 +1,4 @@
-package entries
+package store
 
 import (
 	"bufio"

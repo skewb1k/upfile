@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/skewb1k/upfile/internal/entries"
-	"github.com/skewb1k/upfile/internal/upstreams"
+	"github.com/skewb1k/upfile/internal/service"
+	"github.com/skewb1k/upfile/internal/store"
 	"github.com/spf13/cobra"
 )
 
@@ -16,7 +16,7 @@ func pullCmd() *cobra.Command {
 		Use:   "pull <path>",
 		Short: "Pull file from upstream",
 		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: wrap(func(cmd *cobra.Command, s *service.Service, args []string) error {
 			path, err := filepath.Abs(args[0])
 			if err != nil {
 				return fmt.Errorf("failed to get abs path to dest dir: %w", err)
@@ -24,13 +24,9 @@ func pullCmd() *cobra.Command {
 
 			fname, destDir := filepath.Base(path), filepath.Dir(path)
 
-			baseDir := getBaseDir()
-			upstreamsProvider := upstreams.NewProvider(baseDir)
-			entriesProvider := entries.NewProvider(baseDir)
-
-			upstream, err := upstreamsProvider.GetUpstream(cmd.Context(), fname)
+			upstream, err := s.CatLatest(cmd.Context(), fname)
 			if err != nil {
-				return fmt.Errorf("get upstream: %w", err)
+				return fmt.Errorf("cat latest: %w", err)
 			}
 
 			existing, err := os.ReadFile(path)
@@ -44,29 +40,29 @@ func pullCmd() *cobra.Command {
 				}
 			}
 
-			if err := entriesProvider.CreateEntry(cmd.Context(), fname, destDir); err != nil {
-				if !errors.Is(err, entries.ErrExists) {
+			if err := s.CreateEntry(cmd.Context(), fname, destDir); err != nil {
+				if !errors.Is(err, store.ErrExists) {
 					return fmt.Errorf("create entry: %w", err)
 				}
 			}
 
-			if err := WriteFile(path, upstream.Content); err != nil {
+			if err := WriteFile(path, upstream); err != nil {
 				return fmt.Errorf("write file: %w", err)
 			}
 
 			return nil
-		},
+		}),
 	}
 
 	return cmd
 }
 
-func WriteFile(path string, content string) error {
+func WriteFile(path string, content []byte) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return fmt.Errorf("create parent dirs: %w", err)
 	}
 
-	if err := os.WriteFile(path, []byte(content), 0o600); err != nil {
+	if err := os.WriteFile(path, content, 0o600); err != nil {
 		return fmt.Errorf("write file: %w", err)
 	}
 

@@ -1,4 +1,4 @@
-package upstreams
+package store
 
 import "errors"
 
