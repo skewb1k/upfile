@@ -5,8 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/skewb1k/upfile/internal/entries"
-	"github.com/skewb1k/upfile/internal/upstreams"
+	"github.com/skewb1k/upfile/internal/store"
 	"github.com/spf13/cobra"
 )
 
@@ -21,13 +20,16 @@ func pushCmd() *cobra.Command {
 				return fmt.Errorf("failed to get abs path to file: %w", err)
 			}
 
-			entryDir, fname := filepath.Dir(path), filepath.Base(path)
+			newContent, err := os.ReadFile(path)
+			if err != nil {
+				return err
+			}
 
-			baseDir := getBaseDir()
-			upstreamsProvider := upstreams.NewProvider(baseDir)
-			entriesProvider := entries.NewProvider(baseDir)
+			entry, fname := filepath.Dir(path), filepath.Base(path)
 
-			exists, err := entriesProvider.CheckEntry(cmd.Context(), fname, entryDir)
+			s := store.New(getBaseDir())
+
+			exists, err := s.CheckEntry(cmd.Context(), fname, entry)
 			if err != nil {
 				return fmt.Errorf("check entry: %w", err)
 			}
@@ -36,12 +38,7 @@ func pushCmd() *cobra.Command {
 				return ErrNotTracked
 			}
 
-			newContent, err := os.ReadFile(path)
-			if err != nil {
-				return err
-			}
-
-			upstream, err := upstreamsProvider.GetUpstream(cmd.Context(), fname)
+			upstream, err := s.GetUpstream(cmd.Context(), fname)
 			if err != nil {
 				return fmt.Errorf("get upstream: %w", err)
 			}
@@ -50,10 +47,10 @@ func pushCmd() *cobra.Command {
 				return ErrUpToDate
 			}
 
-			if err := upstreamsProvider.SetUpstream(
+			if err := s.SetUpstream(
 				cmd.Context(),
 				fname,
-				upstreams.NewUpstream(string(newContent)),
+				store.NewUpstream(string(newContent)),
 			); err != nil {
 				return fmt.Errorf("set upstream: %w", err)
 			}

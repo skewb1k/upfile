@@ -1,12 +1,13 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 
-	"github.com/skewb1k/upfile/internal/upstreams"
+	"github.com/skewb1k/upfile/internal/store"
 	"github.com/spf13/cobra"
 )
 
@@ -29,11 +30,20 @@ against the known tracked entries.`),
 
 			fname := filepath.Base(path)
 
-			baseDir := getBaseDir()
-			upstreamsProvider := upstreams.NewProvider(baseDir)
-
-			upstream, err := upstreamsProvider.GetUpstream(cmd.Context(), fname)
+			// TODO: use for built-in pager, now just for checking permissions
+			_, err = os.ReadFile(path)
 			if err != nil {
+				return err
+			}
+
+			s := store.New(getBaseDir())
+
+			upstream, err := s.GetUpstream(cmd.Context(), fname)
+			if err != nil {
+				if errors.Is(err, store.ErrNotFound) {
+					return ErrNotTracked
+				}
+
 				return fmt.Errorf("get upstream: %w", err)
 			}
 
@@ -50,6 +60,7 @@ against the known tracked entries.`),
 
 			// TODO: do not use git pager or at least have fallback to some built-in one
 			gitdiff := exec.Command("git", "diff", "--no-index", tmpFile.Name(), path)
+			gitdiff.Stdin = cmd.InOrStdin()
 			gitdiff.Stdout = cmd.OutOrStdout()
 			gitdiff.Stderr = cmd.ErrOrStderr()
 

@@ -10,7 +10,7 @@ tool (
 )
 
 require (
-	github.com/fatih/color v1.18.0
+	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/ivanpirog/coloredcobra v1.0.1
 	github.com/spf13/cobra v1.9.1
 )
@@ -51,7 +51,6 @@ require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/charithe/durationcheck v0.0.10 // indirect
 	github.com/charmbracelet/colorprofile v0.2.3-0.20250311203215-f60798e515dc // indirect
-	github.com/charmbracelet/lipgloss v1.1.0 // indirect
 	github.com/charmbracelet/x/ansi v0.8.0 // indirect
 	github.com/charmbracelet/x/cellbuf v0.0.13-0.20250311204145-2c3ea96c31dd // indirect
 	github.com/charmbracelet/x/term v0.2.1 // indirect
@@ -65,6 +64,7 @@ require (
 	github.com/dlclark/regexp2 v1.11.5 // indirect
 	github.com/dnephin/pflag v1.0.7 // indirect
 	github.com/ettle/strcase v0.2.0 // indirect
+	github.com/fatih/color v1.18.0 // indirect
 	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/firefart/nonamedreturns v1.0.6 // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect

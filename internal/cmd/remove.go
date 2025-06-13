@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/skewb1k/upfile/internal/entries"
+	"github.com/skewb1k/upfile/internal/store"
 	"github.com/spf13/cobra"
 )
 
@@ -16,8 +16,7 @@ func removeCmd() *cobra.Command {
 		Aliases: []string{"rm"},
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			baseDir := getBaseDir()
-			entriesProvider := entries.NewProvider(baseDir)
+			s := store.New(getBaseDir())
 
 			path, err := filepath.Abs(args[0])
 			if err != nil {
@@ -26,8 +25,8 @@ func removeCmd() *cobra.Command {
 
 			entryDir, fname := filepath.Dir(path), filepath.Base(path)
 
-			if err := entriesProvider.DeleteEntry(cmd.Context(), fname, entryDir); err != nil {
-				if errors.Is(err, entries.ErrNotFound) {
+			if err := s.DeleteEntry(cmd.Context(), fname, entryDir); err != nil {
+				if errors.Is(err, store.ErrNotFound) {
 					return ErrNotTracked
 				}
 

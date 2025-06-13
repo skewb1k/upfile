@@ -1,4 +1,4 @@
-package upstreams
+package store
 
 import (
 	"bufio"
@@ -9,20 +9,24 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+
+	"github.com/skewb1k/upfile/pkg/sha256"
 )
 
-type Provider struct {
-	BaseDir string
+type Upstream struct {
+	Hash    sha256.SHA256
+	Content string
 }
 
-func NewProvider(baseDir string) *Provider {
-	return &Provider{
-		BaseDir: baseDir,
+func NewUpstream(content string) *Upstream {
+	return &Upstream{
+		Hash:    sha256.FromString(content),
+		Content: content,
 	}
 }
 
-func (p Provider) GetFilenames(ctx context.Context) ([]string, error) {
-	entries, err := os.ReadDir(p.getUpstreams())
+func (s Store) GetFilenames(ctx context.Context) ([]string, error) {
+	entries, err := os.ReadDir(s.getUpstreams())
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return nil, nil
@@ -42,8 +46,8 @@ func (p Provider) GetFilenames(ctx context.Context) ([]string, error) {
 	return dirs, nil
 }
 
-func (p Provider) SetUpstream(ctx context.Context, fname string, upstream *Upstream) error {
-	path := p.getPathToUpstream(fname)
+func (s Store) SetUpstream(ctx context.Context, fname string, upstream *Upstream) error {
+	path := s.getPathToUpstream(fname)
 
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return fmt.Errorf("create versions dir: %w", err)
@@ -69,8 +73,8 @@ func (p Provider) SetUpstream(ctx context.Context, fname string, upstream *Upstr
 	return nil
 }
 
-func (p Provider) GetUpstream(ctx context.Context, fname string) (Upstream, error) {
-	path := p.getPathToUpstream(fname)
+func (s Store) GetUpstream(ctx context.Context, fname string) (Upstream, error) {
+	path := s.getPathToUpstream(fname)
 
 	f, err := os.Open(path)
 	if err != nil {
@@ -106,8 +110,8 @@ func (p Provider) GetUpstream(ctx context.Context, fname string) (Upstream, erro
 	}, nil
 }
 
-func (p Provider) CheckUpstream(ctx context.Context, fname string) (bool, error) {
-	path := p.getPathToUpstream(fname)
+func (s Store) CheckUpstream(ctx context.Context, fname string) (bool, error) {
+	path := s.getPathToUpstream(fname)
 
 	if _, err := os.Stat(path); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
@@ -120,8 +124,8 @@ func (p Provider) CheckUpstream(ctx context.Context, fname string) (bool, error)
 	return true, nil
 }
 
-func (p Provider) DeleteUpstream(ctx context.Context, fname string) error {
-	path := p.getPathToUpstream(fname)
+func (s Store) DeleteUpstream(ctx context.Context, fname string) error {
+	path := s.getPathToUpstream(fname)
 
 	if err := os.Remove(path); err != nil {
 		if errors.Is(err, os.ErrNotExist) {

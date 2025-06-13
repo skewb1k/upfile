@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"text/tabwriter"
 
-	"github.com/skewb1k/upfile/internal/entries"
-	"github.com/skewb1k/upfile/internal/upstreams"
+	"github.com/charmbracelet/lipgloss"
+	"github.com/skewb1k/upfile/internal/store"
 	"github.com/spf13/cobra"
 )
 
@@ -31,6 +30,15 @@ type File struct {
 	Entries []Entry
 }
 
+const margin = 2
+
+var (
+	_headingStyle = lipgloss.NewStyle().Bold(true)
+	_pathStyle    = lipgloss.NewStyle().MarginLeft(margin)
+)
+
+var _errorLineStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("1"))
+
 func listCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "list",
@@ -38,77 +46,75 @@ func listCmd() *cobra.Command {
 		Aliases: []string{"ls"},
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			baseDir := getBaseDir()
-			upstreamsProvider := upstreams.NewProvider(baseDir)
-			entriesProvider := entries.NewProvider(baseDir)
+			s := store.New(getBaseDir())
 
-			files, err := upstreamsProvider.GetFilenames(cmd.Context())
+			files, err := s.GetFilenames(cmd.Context())
 			if err != nil {
 				return fmt.Errorf("get files: %w", err)
 			}
 
-			res := make([]File, len(files))
-
-			// TODO: refactor, do not duplicate Status command logic
 			for i, fname := range files {
-				upstream, err := upstreamsProvider.GetUpstream(cmd.Context(), fname)
+				upstream, err := s.GetUpstream(cmd.Context(), fname)
 				if err != nil {
-					return fmt.Errorf("get upstream: %w", err)
+					panic(fmt.Errorf("get upstream: %w", err))
 				}
 
-				entriesList, err := entriesProvider.GetEntriesByFilename(cmd.Context(), fname)
+				entriesList, err := s.GetEntriesByFilename(cmd.Context(), fname)
 				if err != nil {
 					return fmt.Errorf("get entries by filename: %w", err)
 				}
 
-				res[i] = File{
-					Fname:   fname,
-					Entries: make([]Entry, len(entriesList)),
-				}
+				fmt.Println(_headingStyle.Render(fname))
+
+				rendered := make([]Entry, len(entriesList))
+				maxWidth := 0
 
 				for j, entry := range entriesList {
-					path := filepath.Join(entry, fname)
-					res[i].Entries[j] = Entry{
-						Path:   path,
+					rendered[j] = Entry{
+						Path:   filepath.Join(entry, fname),
 						Status: EntryStatusUpToDate,
 						Err:    nil,
 					}
 
-					existing, err := os.ReadFile(path)
+					existing, err := os.ReadFile(rendered[j].Path)
 					if err != nil {
 						if errors.Is(err, os.ErrNotExist) {
-							res[i].Entries[j].Status = EntryStatusDeleted
+							rendered[j].Status = EntryStatusDeleted
 						} else {
-							res[i].Entries[j].Err = err
+							rendered[j].Err = errors.Unwrap(err)
 						}
 					} else if !upstream.Hash.EqualBytes(existing) {
-						res[i].Entries[j].Status = EntryStatusModified
+						rendered[j].Status = EntryStatusModified
+					}
+
+					if w := len(rendered[j].Path); w > maxWidth {
+						maxWidth = w
 					}
 				}
-			}
 
-			if len(files) == 0 {
-				return nil
-			}
-
-			w := tabwriter.NewWriter(cmd.OutOrStdout(), 0, 0, 2, ' ', 0)
-			defer w.Flush()
-
-			for i, f := range res {
-				mustFprintf(w, "%s:\n", f.Fname)
-
-				// TODO: fix alignment and refactor
-				for _, entry := range f.Entries {
-					fn := entry.Path
-					if entry.Err != nil {
-						mustFprintf(w, red("\t%s\t%s\n"), fn, errors.Unwrap(entry.Err).Error())
+				for _, e := range rendered {
+					var text string
+					if e.Err != nil {
+						text = "error: " + e.Err.Error()
 					} else {
-						mustFprintf(w, "\t%s\t%s\n", fn, statusAsString(entry.Status))
+						text = statusAsString(e.Status)
 					}
+
+					line := lipgloss.JoinHorizontal(
+						lipgloss.Top,
+						_pathStyle.Width(maxWidth+margin).Render(e.Path),
+						text,
+					)
+
+					if e.Err != nil {
+						line = _errorLineStyle.Render(line)
+					}
+
+					cmd.Println(line)
 				}
 
 				if i < len(files)-1 {
-					mustFprintf(w, "\n")
+					cmd.Println()
 				}
 			}
 
@@ -117,4 +123,23 @@ func listCmd() *cobra.Command {
 	}
 
 	return cmd
+}
+
+var (
+	_modifiedStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("11"))
+	_upToDateStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("10"))
+	_deletedStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("9"))
+)
+
+func statusAsString(status EntryStatus) string {
+	switch status {
+	case EntryStatusModified:
+		return _modifiedStyle.Render("Modified")
+	case EntryStatusUpToDate:
+		return _upToDateStyle.Render("Up-to-date")
+	case EntryStatusDeleted:
+		return _deletedStyle.Render("Deleted")
+	default:
+		panic("UNEXPECTED")
+	}
 }

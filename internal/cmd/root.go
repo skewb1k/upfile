@@ -29,7 +29,7 @@ Support project on Github: https://github.com/skewb1k/upfile
 	}
 
 	cmd.SetVersionTemplate("{{.Version}}")
-	cmd.SetErrPrefix(red("error:"))
+	cmd.SetErrPrefix(_errorLineStyle.Render("error:"))
 
 	cc.Init(&cc.Config{
 		RootCmd:         cmd,

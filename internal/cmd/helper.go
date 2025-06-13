@@ -7,8 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/fatih/color"
-	"github.com/skewb1k/upfile/internal/upstreams"
+	"github.com/skewb1k/upfile/internal/store"
 	"github.com/spf13/cobra"
 )
 
@@ -45,31 +44,17 @@ func getBaseDir() string {
 // 	}
 // }
 
-func mustFprintf(w io.Writer, format string, a ...any) {
-	if _, err := fmt.Fprintf(w, format, a...); err != nil {
-		panic(err)
-	}
-}
-
-// nolint: gochecknoglobals
-var (
-	green  = color.New(color.FgGreen).SprintFunc()
-	yellow = color.New(color.FgYellow).SprintFunc()
-	red    = color.New(color.FgRed).SprintFunc()
-)
-
-func statusAsString(status EntryStatus) string {
-	switch status {
-	case EntryStatusModified:
-		return yellow("Modified")
-	case EntryStatusUpToDate:
-		return green("Up-to-date")
-	case EntryStatusDeleted:
-		return red("Deleted")
-	default:
-		panic("UNEXPECTED")
-	}
-}
+// func mustFprintf(w io.Writer, format string, a ...any) {
+// 	if _, err := fmt.Fprintf(w, format, a...); err != nil {
+// 		panic(err)
+// 	}
+// }
+//
+// func mustFprintln(w io.Writer, a ...any) {
+// 	if _, err := fmt.Fprintln(w, a...); err != nil {
+// 		panic(err)
+// 	}
+// }
 
 func completeFname(
 	cmd *cobra.Command,
@@ -80,8 +65,8 @@ func completeFname(
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
-	upstreamsProvider := upstreams.NewProvider(getBaseDir())
-	files, err := upstreamsProvider.GetFilenames(cmd.Context())
+	s := store.New(getBaseDir())
+	files, err := s.GetFilenames(cmd.Context())
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveError
 	}
@@ -114,4 +99,16 @@ func ask(stdin io.Reader, list []string, defaultYes bool, msg string) bool {
 	}
 
 	return input == "y"
+}
+
+func WriteFile(path string, content string) error {
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		return fmt.Errorf("create parent dirs: %w", err)
+	}
+
+	if err := os.WriteFile(path, []byte(content), 0o600); err != nil {
+		return fmt.Errorf("write file: %w", err)
+	}
+
+	return nil
 }

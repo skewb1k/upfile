@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/skewb1k/upfile/internal/entries"
-	"github.com/skewb1k/upfile/internal/upstreams"
+	"github.com/skewb1k/upfile/internal/store"
 	"github.com/spf13/cobra"
 )
 
@@ -27,43 +26,32 @@ Note: This does NOT delete any actual files from user-space filesystem.
 
 Use with caution. You will be prompted to confirm removal unless --yes is specified.
 `),
+		ValidArgsFunction: completeFname,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			baseDir := getBaseDir()
-			upstreamsProvider := upstreams.NewProvider(baseDir)
-			entriesProvider := entries.NewProvider(baseDir)
+			s := store.New(getBaseDir())
 
 			fname := args[0]
 
-			// TODO: collect errors
-			e, err := entriesProvider.GetEntriesByFilename(cmd.Context(), fname)
+			entries, err := s.GetEntriesByFilename(cmd.Context(), fname)
 			if err != nil {
-				if errors.Is(err, entries.ErrInvalidFilename) {
-					return ErrNotTracked
-				}
-
 				return fmt.Errorf("get entries by filename: %w", err)
 			}
 
-			// FIXME:
-			if len(e) == 0 {
-				return ErrNoEntries
-			}
-
-			if !yes && !ask(cmd.InOrStdin(), e, false, "The following entries will be untracked:") {
+			if len(entries) != 0 && !yes && !ask(cmd.InOrStdin(), entries, false, "The following entries will be untracked:") {
 				os.Exit(1)
 				return nil
 			}
 
-			if err := upstreamsProvider.DeleteUpstream(cmd.Context(), fname); err != nil {
-				if errors.Is(err, upstreams.ErrNotFound) {
+			if err := s.DeleteUpstream(cmd.Context(), fname); err != nil {
+				if errors.Is(err, store.ErrNotFound) {
 					return ErrNotTracked
 				}
 
 				return fmt.Errorf("delete upstream: %w", err)
 			}
 
-			for _, entry := range e {
-				if err := entriesProvider.DeleteEntry(cmd.Context(), fname, entry); err != nil {
+			for _, entry := range entries {
+				if err := s.DeleteEntry(cmd.Context(), fname, entry); err != nil {
 					return fmt.Errorf("delete entry: %w", err)
 				}
 			}
@@ -73,7 +61,6 @@ Use with caution. You will be prompted to confirm removal unless --yes is specif
 	}
 
 	cmd.Flags().BoolVarP(&yes, "yes", "y", false, "Automatic 'yes' to prompts")
-	cmd.ValidArgsFunction = completeFname
 
 	return cmd
 }

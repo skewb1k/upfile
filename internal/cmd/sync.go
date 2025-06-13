@@ -6,37 +6,35 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/skewb1k/upfile/internal/entries"
-	"github.com/skewb1k/upfile/internal/upstreams"
+	"github.com/skewb1k/upfile/internal/store"
 	"github.com/spf13/cobra"
 )
 
 func syncCmd() *cobra.Command {
 	// TODO:
+	// like git add -p
 	// var patch bool
 
 	var yes bool
 
 	cmd := &cobra.Command{
-		Use:   "sync <filename>",
-		Args:  cobra.ExactArgs(1),
-		Short: "Sync all entries of file with upstream",
-
+		Use:               "sync <filename>",
+		Args:              cobra.ExactArgs(1),
+		Short:             "Sync all entries of file with upstream",
+		ValidArgsFunction: completeFname,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			baseDir := getBaseDir()
-			upstreamsProvider := upstreams.NewProvider(baseDir)
-			entriesProvider := entries.NewProvider(baseDir)
+			s := store.New(getBaseDir())
 
 			fname := args[0]
 
-			entriesList, err := entriesProvider.GetEntriesByFilename(cmd.Context(), fname)
+			entries, err := s.GetEntriesByFilename(cmd.Context(), fname)
 			if err != nil {
 				return fmt.Errorf("get entries by filename: %w", err)
 			}
 
-			upstream, err := upstreamsProvider.GetUpstream(cmd.Context(), fname)
+			upstream, err := s.GetUpstream(cmd.Context(), fname)
 			if err != nil {
-				if errors.Is(err, upstreams.ErrNotFound) {
+				if errors.Is(err, store.ErrNotFound) {
 					return ErrNotTracked
 				}
 
@@ -45,24 +43,28 @@ func syncCmd() *cobra.Command {
 
 			toUpdate := make([]string, 0)
 
-			for _, entryDir := range entriesList {
-				path := filepath.Join(entryDir, fname)
+			for _, entry := range entries {
+				path := filepath.Join(entry, fname)
 
 				existing, err := os.ReadFile(path)
-				if err != nil {
+				if err == nil && upstream.Hash.EqualBytes(existing) {
+					// Up-to-date, skip
+					continue
+				}
+
+				if err != nil && !errors.Is(err, os.ErrNotExist) {
 					return err
 				}
 
-				if !upstream.Hash.EqualBytes(existing) {
-					toUpdate = append(toUpdate, filepath.Join(entryDir, fname))
-				}
+				toUpdate = append(toUpdate, path)
 			}
 
 			if len(toUpdate) == 0 {
-				return ErrUpToDate
+				cmd.Println("Everything up-to-date")
+				return nil
 			}
 
-			if !yes && !ask(cmd.InOrStdin(), toUpdate, true, "The following entries will be updated:") {
+			if !yes && !ask(cmd.InOrStdin(), toUpdate, true /* defaultYes */, "The following entries will be updated:") {
 				os.Exit(1)
 				return nil
 			}
@@ -78,7 +80,6 @@ func syncCmd() *cobra.Command {
 	}
 
 	cmd.Flags().BoolVarP(&yes, "yes", "y", false, "Automatic 'yes' to prompts")
-	cmd.ValidArgsFunction = completeFname
 
 	// cmd.Flags().BoolVarP(&patch, "patch", "p", false, "Interactively apply changes per entry")
 

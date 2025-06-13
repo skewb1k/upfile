@@ -5,15 +5,14 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"text/tabwriter"
 
-	"github.com/skewb1k/upfile/internal/entries"
-	"github.com/skewb1k/upfile/internal/upstreams"
+	"github.com/charmbracelet/lipgloss"
+	"github.com/skewb1k/upfile/internal/store"
 	"github.com/spf13/cobra"
 )
 
 func statusCmd() *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "status [<dir>]",
 		Short: "Print status of files in dir (default: current dir)",
 		Args:  cobra.MaximumNArgs(1),
@@ -23,59 +22,83 @@ func statusCmd() *cobra.Command {
 				dir = args[0]
 			}
 
-			baseDir := getBaseDir()
-			upstreamsProvider := upstreams.NewProvider(baseDir)
-			entriesProvider := entries.NewProvider(baseDir)
+			s := store.New(getBaseDir())
 
 			absDir, err := filepath.Abs(dir)
 			if err != nil {
 				return fmt.Errorf("failed to get abs path to dir: %w", err)
 			}
 
-			files, err := entriesProvider.GetFilenamesByEntry(cmd.Context(), absDir)
+			files, err := s.GetFilenamesByEntry(cmd.Context(), absDir)
 			if err != nil {
-				// if errors.Is(err, index.ErrNotFound) {
-				// 	return ErrNoEntries
-				// }
+				if errors.Is(err, store.ErrNotFound) {
+					if dir == "." {
+						cmd.Println("No tracked files in this directory")
+					} else {
+						cmd.Printf("No tracked files in '%s'\n", dir)
+					}
+
+					return nil
+				}
 
 				return fmt.Errorf("get files by entry dir: %w", err)
 			}
 
-			res := make([]Entry, len(files))
+			rendered := make([]Entry, len(files))
+			maxWidth := 0
 
 			for i, fname := range files {
-				path := filepath.Join(absDir, fname)
-				res[i] = Entry{
-					Path:   path,
+				rendered[i] = Entry{
+					Path:   filepath.Join(absDir, fname),
 					Status: EntryStatusUpToDate,
 					Err:    nil,
 				}
 
-				upstream, err := upstreamsProvider.GetUpstream(cmd.Context(), fname)
+				upstream, err := s.GetUpstream(cmd.Context(), fname)
 				if err != nil {
 					return fmt.Errorf("get upstream: %w", err)
 				}
 
-				existing, err := os.ReadFile(path)
+				existing, err := os.ReadFile(rendered[i].Path)
 				if err != nil {
-					if !errors.Is(err, os.ErrNotExist) {
-						return err
+					if errors.Is(err, os.ErrNotExist) {
+						rendered[i].Status = EntryStatusDeleted
+					} else {
+						rendered[i].Err = errors.Unwrap(err)
 					}
-
-					res[i].Status = EntryStatusDeleted
 				} else if !upstream.Hash.EqualBytes(existing) {
-					res[i].Status = EntryStatusModified
+					rendered[i].Status = EntryStatusModified
+				}
+
+				if w := len(rendered[i].Path); w > maxWidth {
+					maxWidth = w
 				}
 			}
 
-			w := tabwriter.NewWriter(cmd.OutOrStdout(), 0, 0, 2, ' ', 0)
-			defer w.Flush()
+			for _, e := range rendered {
+				var text string
+				if e.Err != nil {
+					text = "error: " + e.Err.Error()
+				} else {
+					text = statusAsString(e.Status)
+				}
 
-			for _, entry := range res {
-				mustFprintf(w, "%s\t%s\n", filepath.Base(entry.Path), statusAsString(entry.Status))
+				line := lipgloss.JoinHorizontal(
+					lipgloss.Top,
+					lipgloss.NewStyle().Width(maxWidth+margin).Render(e.Path),
+					text,
+				)
+
+				if e.Err != nil {
+					line = _errorLineStyle.Render(line)
+				}
+
+				cmd.Println(line)
 			}
 
 			return nil
 		},
 	}
+
+	return cmd
 }

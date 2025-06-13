@@ -1,29 +1,28 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 
-	"github.com/skewb1k/upfile/internal/upstreams"
+	"github.com/skewb1k/upfile/internal/store"
 	"github.com/spf13/cobra"
 )
 
 func showCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "show <filename>",
-		Short: "Show upstream version of file",
-		Args:  cobra.ExactArgs(1),
+		Use:               "show <filename>",
+		Short:             "Show upstream version of file",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeFname,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			baseDir := getBaseDir()
-			upstreamsProvider := upstreams.NewProvider(baseDir)
+			s := store.New(getBaseDir())
 
-			fname := args[0]
-
-			upstream, err := upstreamsProvider.GetUpstream(cmd.Context(), fname)
+			upstream, err := s.GetUpstream(cmd.Context(), args[0])
 			if err != nil {
-				// if errors.Is(err, index.ErrNotFound) || errors.Is(err, index.ErrInvalidFilename) {
-				// 	return ErrNotTracked
-				// }
-				//
+				if errors.Is(err, store.ErrNotFound) {
+					return ErrNotTracked
+				}
+
 				return fmt.Errorf("get upstream: %w", err)
 			}
 
@@ -32,8 +31,6 @@ func showCmd() *cobra.Command {
 			return nil
 		},
 	}
-
-	cmd.ValidArgsFunction = completeFname
 
 	return cmd
 }
