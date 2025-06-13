@@ -63,7 +63,7 @@ func (e EntrySet) Save(path string) error {
 	return nil
 }
 
-func Load(path string) (EntrySet, error) {
+func loadEntrySet(path string) (EntrySet, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {

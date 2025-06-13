@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -14,13 +15,11 @@ func addCmd() *cobra.Command {
 		Use:   "add <path>",
 		Short: "Add a file to be tracked",
 		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: withStore(func(cmd *cobra.Command, s *store.Store, args []string) error {
 			path, err := filepath.Abs(args[0])
 			if err != nil {
 				return fmt.Errorf("failed to get abs path to file: %w", err)
 			}
-
-			s := store.New(getBaseDir())
 
 			content, err := os.ReadFile(path)
 			if err != nil {
@@ -30,6 +29,11 @@ func addCmd() *cobra.Command {
 			entry, fname := filepath.Dir(path), filepath.Base(path)
 
 			if err := s.CreateEntry(cmd.Context(), fname, entry); err != nil {
+				if errors.Is(err, store.ErrExists) {
+					cmd.Printf("File '%s' already tracked\n", path)
+					return nil
+				}
+
 				return fmt.Errorf("create entry: %w", err)
 			}
 
@@ -39,13 +43,13 @@ func addCmd() *cobra.Command {
 			}
 
 			if !upstreamExists {
-				if err := s.SetUpstream(cmd.Context(), fname, store.NewUpstream(string(content))); err != nil {
+				if err := s.SetUpstream(cmd.Context(), fname, store.NewUpstream(content)); err != nil {
 					return fmt.Errorf("set upstream: %w", err)
 				}
 			}
 
 			return nil
-		},
+		}),
 	}
 
 	return cmd

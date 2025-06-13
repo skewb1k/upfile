@@ -15,12 +15,12 @@ import (
 
 type Upstream struct {
 	Hash    sha256.SHA256
-	Content string
+	Content []byte
 }
 
-func NewUpstream(content string) *Upstream {
+func NewUpstream(content []byte) *Upstream {
 	return &Upstream{
-		Hash:    sha256.FromString(content),
+		Hash:    sha256.FromBytes(content),
 		Content: content,
 	}
 }
@@ -66,7 +66,7 @@ func (s Store) SetUpstream(ctx context.Context, fname string, upstream *Upstream
 		return fmt.Errorf("write hash: %w", err)
 	}
 
-	if _, err := gw.Write([]byte(upstream.Content)); err != nil {
+	if _, err := gw.Write(upstream.Content); err != nil {
 		return fmt.Errorf("gzip write: %w", err)
 	}
 
@@ -106,7 +106,7 @@ func (s Store) GetUpstream(ctx context.Context, fname string) (Upstream, error) 
 
 	return Upstream{
 		Hash:    hash,
-		Content: string(content),
+		Content: content,
 	}, nil
 }
 

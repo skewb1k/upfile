@@ -27,9 +27,7 @@ Note: This does NOT delete any actual files from user-space filesystem.
 Use with caution. You will be prompted to confirm removal unless --yes is specified.
 `),
 		ValidArgsFunction: completeFname,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			s := store.New(getBaseDir())
-
+		RunE: withStore(func(cmd *cobra.Command, s *store.Store, args []string) error {
 			fname := args[0]
 
 			entries, err := s.GetEntriesByFilename(cmd.Context(), fname)
@@ -37,9 +35,21 @@ Use with caution. You will be prompted to confirm removal unless --yes is specif
 				return fmt.Errorf("get entries by filename: %w", err)
 			}
 
-			if len(entries) != 0 && !yes && !ask(cmd.InOrStdin(), entries, false, "The following entries will be untracked:") {
-				os.Exit(1)
-				return nil
+			if len(entries) != 0 && !yes {
+				cmd.Println("The following entries will be untracked:")
+
+				for _, e := range entries {
+					cmd.Println(" -", e)
+				}
+
+				ok, err := askDefaultNo(cmd.InOrStdin(), cmd.OutOrStdout())
+				if err != nil {
+					return err
+				}
+
+				if !ok {
+					os.Exit(1)
+				}
 			}
 
 			if err := s.DeleteUpstream(cmd.Context(), fname); err != nil {
@@ -57,7 +67,7 @@ Use with caution. You will be prompted to confirm removal unless --yes is specif
 			}
 
 			return nil
-		},
+		}),
 	}
 
 	cmd.Flags().BoolVarP(&yes, "yes", "y", false, "Automatic 'yes' to prompts")

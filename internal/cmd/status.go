@@ -16,13 +16,11 @@ func statusCmd() *cobra.Command {
 		Use:   "status [<dir>]",
 		Short: "Print status of files in dir (default: current dir)",
 		Args:  cobra.MaximumNArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: withStore(func(cmd *cobra.Command, s *store.Store, args []string) error {
 			dir := "."
 			if len(args) == 1 {
 				dir = args[0]
 			}
-
-			s := store.New(getBaseDir())
 
 			absDir, err := filepath.Abs(dir)
 			if err != nil {
@@ -97,7 +95,7 @@ func statusCmd() *cobra.Command {
 			}
 
 			return nil
-		},
+		}),
 	}
 
 	return cmd

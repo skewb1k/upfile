@@ -22,9 +22,7 @@ func syncCmd() *cobra.Command {
 		Args:              cobra.ExactArgs(1),
 		Short:             "Sync all entries of file with upstream",
 		ValidArgsFunction: completeFname,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			s := store.New(getBaseDir())
-
+		RunE: withStore(func(cmd *cobra.Command, s *store.Store, args []string) error {
 			fname := args[0]
 
 			entries, err := s.GetEntriesByFilename(cmd.Context(), fname)
@@ -64,19 +62,31 @@ func syncCmd() *cobra.Command {
 				return nil
 			}
 
-			if !yes && !ask(cmd.InOrStdin(), toUpdate, true /* defaultYes */, "The following entries will be updated:") {
-				os.Exit(1)
-				return nil
+			if !yes {
+				cmd.Println("The following entries will be updated:")
+
+				for _, e := range toUpdate {
+					cmd.Println(" -", e)
+				}
+
+				ok, err := askDefaultYes(cmd.InOrStdin(), cmd.OutOrStdout())
+				if err != nil {
+					return err
+				}
+
+				if !ok {
+					os.Exit(1)
+				}
 			}
 
 			for _, fullPath := range toUpdate {
-				if err := WriteFile(fullPath, upstream.Content); err != nil {
-					return fmt.Errorf("write file: %w", err)
+				if err := MkdirAllWriteFile(fullPath, upstream.Content); err != nil {
+					return err
 				}
 			}
 
 			return nil
-		},
+		}),
 	}
 
 	cmd.Flags().BoolVarP(&yes, "yes", "y", false, "Automatic 'yes' to prompts")

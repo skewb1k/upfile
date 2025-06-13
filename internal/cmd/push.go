@@ -14,7 +14,7 @@ func pushCmd() *cobra.Command {
 		Use:   "push <path>",
 		Short: "Push file to the upstream",
 		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: withStore(func(cmd *cobra.Command, s *store.Store, args []string) error {
 			path, err := filepath.Abs(args[0])
 			if err != nil {
 				return fmt.Errorf("failed to get abs path to file: %w", err)
@@ -26,8 +26,6 @@ func pushCmd() *cobra.Command {
 			}
 
 			entry, fname := filepath.Dir(path), filepath.Base(path)
-
-			s := store.New(getBaseDir())
 
 			exists, err := s.CheckEntry(cmd.Context(), fname, entry)
 			if err != nil {
@@ -44,18 +42,19 @@ func pushCmd() *cobra.Command {
 			}
 
 			if upstream.Hash.EqualBytes(newContent) {
-				return ErrUpToDate
+				cmd.Println("File up-to-date")
+				return nil
 			}
 
 			if err := s.SetUpstream(
 				cmd.Context(),
 				fname,
-				store.NewUpstream(string(newContent)),
+				store.NewUpstream(newContent),
 			); err != nil {
 				return fmt.Errorf("set upstream: %w", err)
 			}
 
 			return nil
-		},
+		}),
 	}
 }

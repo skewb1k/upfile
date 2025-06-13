@@ -22,7 +22,7 @@ to its upstream.
 You must pass a path to a file that is already being tracked. The file is matched by its filename
 against the known tracked entries.`),
 		Args: cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: withStore(func(cmd *cobra.Command, s *store.Store, args []string) error {
 			path, err := filepath.Abs(args[0])
 			if err != nil {
 				return fmt.Errorf("failed to get abs path to file: %w", err)
@@ -35,8 +35,6 @@ against the known tracked entries.`),
 			if err != nil {
 				return err
 			}
-
-			s := store.New(getBaseDir())
 
 			upstream, err := s.GetUpstream(cmd.Context(), fname)
 			if err != nil {
@@ -53,7 +51,7 @@ against the known tracked entries.`),
 			}
 			defer os.Remove(tmpFile.Name())
 
-			if _, err := tmpFile.WriteString(upstream.Content); err != nil {
+			if _, err := tmpFile.Write(upstream.Content); err != nil {
 				return fmt.Errorf("write to temp file: %w", err)
 			}
 			_ = tmpFile.Close()
@@ -67,7 +65,7 @@ against the known tracked entries.`),
 			_ = gitdiff.Run()
 
 			return nil
-		},
+		}),
 	}
 
 	return cmd

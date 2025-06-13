@@ -21,31 +21,31 @@ func (s Store) CreateEntry(
 ) error {
 	byEntryPath := s.getPathToFilenamesByEntry(entry)
 
-	bydir, err := Load(byEntryPath)
+	byDir, err := loadEntrySet(byEntryPath)
 	if err != nil {
 		return err
 	}
 
-	if !bydir.Add(fname) {
+	if !byDir.Add(fname) {
 		return ErrExists
 	}
 
 	byNamePath := s.getPathToEntriesByName(fname)
 
-	byname, err := Load(byNamePath)
+	byName, err := loadEntrySet(byNamePath)
 	if err != nil {
 		return err
 	}
 
-	if !byname.Add(entry) {
+	if !byName.Add(entry) {
 		return ErrExists
 	}
 
-	if err := byname.Save(byNamePath); err != nil {
+	if err := byName.Save(byNamePath); err != nil {
 		return err
 	}
 
-	if err := bydir.Save(byEntryPath); err != nil {
+	if err := byDir.Save(byEntryPath); err != nil {
 		return err
 	}
 
@@ -55,7 +55,7 @@ func (s Store) CreateEntry(
 func (s Store) GetEntriesByFilename(ctx context.Context, fname string) ([]string, error) {
 	byNamePath := s.getPathToEntriesByName(fname)
 
-	byname, err := Load(byNamePath)
+	byname, err := loadEntrySet(byNamePath)
 	if err != nil {
 		return nil, err
 	}
@@ -70,31 +70,31 @@ func (s Store) DeleteEntry(
 ) error {
 	byEntryPath := s.getPathToFilenamesByEntry(entry)
 
-	bydir, err := Load(byEntryPath)
+	byDir, err := loadEntrySet(byEntryPath)
 	if err != nil {
 		return err
 	}
 
-	if !bydir.Delete(fname) {
+	if !byDir.Delete(fname) {
 		return ErrNotFound
 	}
 
 	byNamePath := s.getPathToEntriesByName(fname)
 
-	byname, err := Load(byNamePath)
+	byName, err := loadEntrySet(byNamePath)
 	if err != nil {
 		return err
 	}
 
-	if !byname.Delete(entry) {
+	if !byName.Delete(entry) {
 		return ErrNotFound
 	}
 
-	if err := byname.Save(byNamePath); err != nil {
+	if err := byName.Save(byNamePath); err != nil {
 		return err
 	}
 
-	if err := bydir.Save(byEntryPath); err != nil {
+	if err := byDir.Save(byEntryPath); err != nil {
 		return err
 	}
 
@@ -104,19 +104,19 @@ func (s Store) DeleteEntry(
 func (s Store) CheckEntry(ctx context.Context, fname string, entry string) (bool, error) {
 	byNamePath := s.getPathToEntriesByName(fname)
 
-	byname, err := Load(byNamePath)
+	byName, err := loadEntrySet(byNamePath)
 	if err != nil {
 		return false, err
 	}
 
-	_, exists := byname[entry]
+	_, exists := byName[entry]
 	return exists, nil
 }
 
 func (s Store) GetFilenamesByEntry(ctx context.Context, entry string) ([]string, error) {
 	byEntryPath := s.getPathToFilenamesByEntry(entry)
 
-	filenames, err := Load(byEntryPath)
+	filenames, err := loadEntrySet(byEntryPath)
 	if err != nil {
 		return nil, err
 	}

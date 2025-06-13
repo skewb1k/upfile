@@ -10,22 +10,20 @@ import (
 )
 
 func removeCmd() *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:     "remove <path>",
 		Short:   "Remove entry from tracked list",
 		Aliases: []string{"rm"},
 		Args:    cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			s := store.New(getBaseDir())
-
+		RunE: withStore(func(cmd *cobra.Command, s *store.Store, args []string) error {
 			path, err := filepath.Abs(args[0])
 			if err != nil {
 				return fmt.Errorf("failed to get abs path to file: %w", err)
 			}
 
-			entryDir, fname := filepath.Dir(path), filepath.Base(path)
+			entry, fname := filepath.Dir(path), filepath.Base(path)
 
-			if err := s.DeleteEntry(cmd.Context(), fname, entryDir); err != nil {
+			if err := s.DeleteEntry(cmd.Context(), fname, entry); err != nil {
 				if errors.Is(err, store.ErrNotFound) {
 					return ErrNotTracked
 				}
@@ -34,6 +32,8 @@ func removeCmd() *cobra.Command {
 			}
 
 			return nil
-		},
+		}),
 	}
+
+	return cmd
 }

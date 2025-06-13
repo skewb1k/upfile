@@ -14,9 +14,7 @@ func showCmd() *cobra.Command {
 		Short:             "Show upstream version of file",
 		Args:              cobra.ExactArgs(1),
 		ValidArgsFunction: completeFname,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			s := store.New(getBaseDir())
-
+		RunE: withStore(func(cmd *cobra.Command, s *store.Store, args []string) error {
 			upstream, err := s.GetUpstream(cmd.Context(), args[0])
 			if err != nil {
 				if errors.Is(err, store.ErrNotFound) {
@@ -29,7 +27,7 @@ func showCmd() *cobra.Command {
 			cmd.Print(upstream.Content)
 
 			return nil
-		},
+		}),
 	}
 
 	return cmd

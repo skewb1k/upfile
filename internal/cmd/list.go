@@ -45,9 +45,7 @@ func listCmd() *cobra.Command {
 		Short:   "List tracked files",
 		Aliases: []string{"ls"},
 		Args:    cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			s := store.New(getBaseDir())
-
+		RunE: withStore(func(cmd *cobra.Command, s *store.Store, args []string) error {
 			files, err := s.GetFilenames(cmd.Context())
 			if err != nil {
 				return fmt.Errorf("get files: %w", err)
@@ -119,7 +117,7 @@ func listCmd() *cobra.Command {
 			}
 
 			return nil
-		},
+		}),
 	}
 
 	return cmd
