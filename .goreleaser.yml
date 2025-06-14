@@ -30,8 +30,6 @@ archives:
 #     exclude:
 #       - "^docs:"
 #       - "^test:"
-#
-#
 aurs:
   - name: upfile-bin
     description: A CLI tool to manage and sync shared configuration files across projects.
@@ -43,9 +41,6 @@ aurs:
     private_key: "{{ .Env.AUR_KEY }}"
     git_url: "ssh://aur@aur.archlinux.org/upfile-bin.git"
     package: |-
-      local x86_64=amd64 i686=386 aarch64=arm64 armv6h=armv6 armv7h=armv7
-      cd "upfile-${pkgver}-linux-${!CARCH}"
-
       # bin
       install -Dm755 "./upfile" "${pkgdir}/usr/bin/upfile"
 
