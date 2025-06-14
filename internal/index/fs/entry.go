@@ -1,20 +1,12 @@
-package store
+package indexFs
 
 import (
 	"context"
+
+	"github.com/skewb1k/upfile/internal/index"
 )
 
-type Store struct {
-	BaseDir string
-}
-
-func New(baseDir string) *Store {
-	return &Store{
-		BaseDir: baseDir,
-	}
-}
-
-func (s Store) CreateEntry(
+func (s IndexFsProvider) CreateEntry(
 	ctx context.Context,
 	fname string,
 	entry string,
@@ -27,7 +19,7 @@ func (s Store) CreateEntry(
 	}
 
 	if !byDir.Add(fname) {
-		return ErrExists
+		return index.ErrExists
 	}
 
 	byNamePath := s.getPathToEntriesByName(fname)
@@ -38,7 +30,7 @@ func (s Store) CreateEntry(
 	}
 
 	if !byName.Add(entry) {
-		return ErrExists
+		return index.ErrExists
 	}
 
 	if err := byName.Save(byNamePath); err != nil {
@@ -52,7 +44,7 @@ func (s Store) CreateEntry(
 	return nil
 }
 
-func (s Store) GetEntriesByFilename(ctx context.Context, fname string) ([]string, error) {
+func (s IndexFsProvider) GetEntriesByFilename(ctx context.Context, fname string) ([]string, error) {
 	byNamePath := s.getPathToEntriesByName(fname)
 
 	byname, err := loadEntrySet(byNamePath)
@@ -63,7 +55,7 @@ func (s Store) GetEntriesByFilename(ctx context.Context, fname string) ([]string
 	return byname.ToSlice(), nil
 }
 
-func (s Store) DeleteEntry(
+func (s IndexFsProvider) DeleteEntry(
 	ctx context.Context,
 	fname string,
 	entry string,
@@ -76,7 +68,7 @@ func (s Store) DeleteEntry(
 	}
 
 	if !byDir.Delete(fname) {
-		return ErrNotFound
+		return index.ErrNotFound
 	}
 
 	byNamePath := s.getPathToEntriesByName(fname)
@@ -87,7 +79,7 @@ func (s Store) DeleteEntry(
 	}
 
 	if !byName.Delete(entry) {
-		return ErrNotFound
+		return index.ErrNotFound
 	}
 
 	if err := byName.Save(byNamePath); err != nil {
@@ -101,7 +93,7 @@ func (s Store) DeleteEntry(
 	return nil
 }
 
-func (s Store) CheckEntry(ctx context.Context, fname string, entry string) (bool, error) {
+func (s IndexFsProvider) CheckEntry(ctx context.Context, fname string, entry string) (bool, error) {
 	byNamePath := s.getPathToEntriesByName(fname)
 
 	byName, err := loadEntrySet(byNamePath)
@@ -113,7 +105,7 @@ func (s Store) CheckEntry(ctx context.Context, fname string, entry string) (bool
 	return exists, nil
 }
 
-func (s Store) GetFilenamesByEntry(ctx context.Context, entry string) ([]string, error) {
+func (s IndexFsProvider) GetFilenamesByEntry(ctx context.Context, entry string) ([]string, error) {
 	byEntryPath := s.getPathToFilenamesByEntry(entry)
 
 	filenames, err := loadEntrySet(byEntryPath)
@@ -122,7 +114,7 @@ func (s Store) GetFilenamesByEntry(ctx context.Context, entry string) ([]string,
 	}
 
 	if len(filenames) == 0 {
-		return nil, ErrNotFound
+		return nil, index.ErrNotFound
 	}
 
 	return filenames.ToSlice(), nil

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/skewb1k/upfile/internal/store"
+	"github.com/skewb1k/upfile/internal/service"
 	"github.com/spf13/cobra"
 )
 
@@ -27,47 +27,24 @@ Note: This does NOT delete any actual files from user-space filesystem.
 Use with caution. You will be prompted to confirm removal unless --yes is specified.
 `),
 		ValidArgsFunction: completeFname,
-		RunE: withStore(func(cmd *cobra.Command, s *store.Store, args []string) error {
-			fname := args[0]
-
-			entries, err := s.GetEntriesByFilename(cmd.Context(), fname)
-			if err != nil {
-				return fmt.Errorf("get entries by filename: %w", err)
-			}
-
-			if len(entries) != 0 && !yes {
-				cmd.Println("The following entries will be untracked:")
-
-				for _, e := range entries {
-					cmd.Println(" -", e)
-				}
-
-				ok, err := askDefaultNo(cmd.InOrStdin(), cmd.OutOrStdout())
-				if err != nil {
-					return err
-				}
-
-				if !ok {
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := service.Drop(
+				cmd.Context(),
+				cmd.InOrStdin(),
+				cmd.OutOrStdout(),
+				getStore(),
+				yes,
+				args[0],
+			); err != nil {
+				if errors.Is(err, service.ErrCancelled) {
 					os.Exit(1)
 				}
-			}
 
-			if err := s.DeleteUpstream(cmd.Context(), fname); err != nil {
-				if errors.Is(err, store.ErrNotFound) {
-					return ErrNotTracked
-				}
-
-				return fmt.Errorf("delete upstream: %w", err)
-			}
-
-			for _, entry := range entries {
-				if err := s.DeleteEntry(cmd.Context(), fname, entry); err != nil {
-					return fmt.Errorf("delete entry: %w", err)
-				}
+				return fmt.Errorf("cannot drop '%s': %w", args[0], err)
 			}
 
 			return nil
-		}),
+		},
 	}
 
 	cmd.Flags().BoolVarP(&yes, "yes", "y", false, "Automatic 'yes' to prompts")

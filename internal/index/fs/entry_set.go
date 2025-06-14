@@ -1,4 +1,4 @@
-package store
+package indexFs
 
 import (
 	"bufio"
@@ -31,6 +31,7 @@ func (e EntrySet) Delete(s string) bool {
 }
 
 // TODO: improve performance
+// insert and delete preserving order and keep it sorted.
 func (e EntrySet) ToSlice() []string {
 	return slices.Sorted(maps.Keys(e))
 }

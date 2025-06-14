@@ -25,10 +25,6 @@ test:
 build:
 	go build -o dist/$(BINARY) ./cmd/upfile
 
-.PHONY: gen
-gen:
-	@go generate ./...
-
 .PHONY: clean
 clean:
 	rm -f dist/$(BINARY)

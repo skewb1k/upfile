@@ -10,14 +10,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const name = "upfile"
-
 // Populated by goreleaser during build
 var version = "unknown"
 
 func Main(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int {
 	cmd := &cobra.Command{
-		Use:     name,
+		Use:     "upfile",
 		Version: version + "\n",
 		Short: `
 Track and sync files across projects
@@ -29,7 +27,7 @@ Support project on Github: https://github.com/skewb1k/upfile
 	}
 
 	cmd.SetVersionTemplate("{{.Version}}")
-	cmd.SetErrPrefix(_errorLineStyle.Render("error:"))
+	cmd.SetErrPrefix("upfile:")
 
 	cc.Init(&cc.Config{
 		RootCmd:         cmd,
@@ -58,6 +56,7 @@ Support project on Github: https://github.com/skewb1k/upfile
 		pushCmd(),
 		syncCmd(),
 		dropCmd(),
+		renameCmd(),
 	)
 
 	if err := cmd.Execute(); err != nil {

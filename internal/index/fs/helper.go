@@ -1,4 +1,4 @@
-package store
+package indexFs
 
 import (
 	"encoding/base64"
@@ -8,29 +8,29 @@ import (
 	"github.com/skewb1k/upfile/pkg/sha256"
 )
 
-func (s Store) getEntries() string {
+func (s IndexFsProvider) getEntries() string {
 	return filepath.Join(
 		s.BaseDir,
 		"entries",
 	)
 }
 
-func (s Store) getPathToEntriesByName(fname string) string {
+func (s IndexFsProvider) getPathToEntriesByName(fname string) string {
 	return filepath.Join(s.getEntries(), "by-filename", encodePath(fname))
 }
 
-func (s Store) getPathToFilenamesByEntry(entry string) string {
+func (s IndexFsProvider) getPathToFilenamesByEntry(entry string) string {
 	return filepath.Join(s.getEntries(), "by-entry", sha256.FromString(entry).String())
 }
 
-func (s Store) getUpstreams() string {
+func (s IndexFsProvider) getUpstreams() string {
 	return filepath.Join(
 		s.BaseDir,
 		"upstreams",
 	)
 }
 
-func (s Store) getPathToUpstream(fname string) string {
+func (s IndexFsProvider) getPathToUpstream(fname string) string {
 	return filepath.Join(s.getUpstreams(), encodePath(fname))
 }
 
