@@ -1,0 +1,61 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+version: 2
+before:
+  hooks:
+    - go mod tidy
+project_name: upfile
+builds:
+  - binary: upfile
+    main: ./cmd/upfile/
+    flags:
+      - -trimpath
+    ldflags: -s -w -X main.version={{.Version}}
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+archives:
+  - formats: [tar.gz]
+    name_template: >-
+      {{ .ProjectName }}_ {{- title .Os }}_ {{- if eq .Arch "amd64" }}x86_64 {{- else if eq .Arch "386" }}i386 {{- else }}{{ .Arch }}{{ end }} {{- if .Arm }}v{{ .Arm }}{{ end }}
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+# changelog:
+#   sort: asc
+#   filters:
+#     exclude:
+#       - "^docs:"
+#       - "^test:"
+#
+#
+aurs:
+  - name: upfile-bin
+    description: A CLI tool to manage and sync shared configuration files across projects.
+    skip_upload: false
+    homepage: https://github.com/skewb1k/upfile
+    maintainers:
+      - "skewb1k <skewb1kunix@gmail.com>"
+    license: MIT
+    private_key: "{{ .Env.AUR_KEY }}"
+    git_url: "ssh://aur@aur.archlinux.org/upfile-bin.git"
+    package: |-
+      local x86_64=amd64 i686=386 aarch64=arm64 armv6h=armv6 armv7h=armv7
+      cd "upfile-${pkgver}-linux-${!CARCH}"
+
+      # bin
+      install -Dm755 "./upfile" "${pkgdir}/usr/bin/upfile"
+
+      # license
+      install -Dm644 "./LICENSE" "${pkgdir}/usr/share/licenses/upfile/LICENSE"
+
+      # completions
+      mkdir -p "${pkgdir}/usr/share/bash-completion/completions/"
+      mkdir -p "${pkgdir}/usr/share/zsh/site-functions/"
+      mkdir -p "${pkgdir}/usr/share/fish/vendor_completions.d/"
+      ./upfile completion bash | install -Dm644 /dev/stdin "${pkgdir}/usr/share/bash-completion/completions/upfile"
+      ./upfile completion zsh | install -Dm644 /dev/stdin "${pkgdir}/usr/share/zsh/site-functions/_upfile"
+      ./upfile completion fish | install -Dm644 /dev/stdin "${pkgdir}/usr/share/fish/vendor_completions.d/upfile.fish"

@@ -1,10 +1,5 @@
 # UpFile
 
-> ⚠️ **Work in Progress**: This project is under active development. The CLI is
-> not stable and may change at any time until v1.0.0 release. If you encounter
-> any issues on beta versions, try to delete $UPFILE_DIR directory, its layout
-> may change
-
 **UpFile** is a CLI tool for syncing files across multiple projects.
 
 It's designed to help you manage shared configuration files like .prettierrc,
@@ -93,7 +88,7 @@ Now both files are consistent again.
 
 # Shell Completion
 
-UpFile can generate Bash, fish, PowerShell, and Zsh completion files.
+UpFile supports advanced and interactive shell completion for Bash, Zsh, fish, and PowerShell.
 
 See the instructions on `upfile completion <YOUR_SHELL> -h`
 
