@@ -113,9 +113,5 @@ func (s IndexFsProvider) GetFilenamesByEntry(ctx context.Context, entry string) 
 		return nil, err
 	}
 
-	if len(filenames) == 0 {
-		return nil, index.ErrNotFound
-	}
-
 	return filenames.ToSlice(), nil
 }

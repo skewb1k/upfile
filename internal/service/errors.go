@@ -10,7 +10,7 @@ var (
 	ErrNotTracked      = errors.New("not tracked")
 	ErrNoEntry         = errors.New("no entry")
 	ErrInvalidFilename = errors.New("invalid filename")
-	ErrNameUnchanged   = errors.New("old and new names are the same")
+	ErrNameUnchanged   = errors.New("names are the same")
 	ErrNotDirectory    = errors.New("not a directory")
 	ErrDirNotExists    = errors.New("no such directory")
 )

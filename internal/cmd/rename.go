@@ -26,11 +26,11 @@ func renameCmd() *cobra.Command {
 			oldName, newName := args[0], args[1]
 			if err := service.Rename(
 				cmd.Context(),
-				getStore(),
+				getIndexFsProvider(),
 				oldName,
 				newName,
 			); err != nil {
-				return fmt.Errorf("cannot rename to '%s': %w", newName, err)
+				return fmt.Errorf("cannot rename '%s' to '%s': %w", oldName, newName, err)
 			}
 
 			return nil

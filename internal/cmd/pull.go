@@ -13,30 +13,32 @@ func pullCmd() *cobra.Command {
 	var yes bool
 
 	cmd := &cobra.Command{
-		Use:               "pull <filename>",
-		Short:             "Pull file from upstream",
-		Args:              cobra.ExactArgs(1),
-		ValidArgsFunction: completeFname,
+		Use:               "pull <filename>...",
+		Short:             "Pull file(s) from upstream",
+		Args:              cobra.MinimumNArgs(1),
+		ValidArgsFunction: completeFnames,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			currentDir, err := os.Getwd()
 			if err != nil {
 				return err
 			}
 
-			if err := service.Pull(
-				cmd.Context(),
-				cmd.InOrStdin(),
-				cmd.OutOrStdout(),
-				getStore(),
-				yes,
-				currentDir,
-				args[0],
-			); err != nil {
-				if errors.Is(err, service.ErrCancelled) {
-					os.Exit(1)
-				}
+			for _, name := range args {
+				if err := service.Pull(
+					cmd.Context(),
+					cmd.InOrStdin(),
+					cmd.OutOrStdout(),
+					getIndexFsProvider(),
+					yes,
+					currentDir,
+					name,
+				); err != nil {
+					if errors.Is(err, service.ErrCancelled) {
+						os.Exit(1)
+					}
 
-				return fmt.Errorf("cannot pull '%s': %w", args[0], err)
+					return fmt.Errorf("cannot pull '%s': %w", name, err)
+				}
 			}
 
 			return nil

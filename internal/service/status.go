@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/skewb1k/upfile/internal/index"
 )
 
 func IsRealDirectory(path string) error {
@@ -41,12 +40,12 @@ func Status(
 
 	files, err := indexProvider.GetFilenamesByEntry(ctx, dir)
 	if err != nil {
-		if errors.Is(err, index.ErrNotFound) {
-			mustFmt(fmt.Fprintf(stdout, "No tracked files in '%s'\n", dir))
-			return nil
-		}
-
 		return fmt.Errorf("get files by entry dir: %w", err)
+	}
+
+	if len(files) == 0 {
+		mustFmt(fmt.Fprintf(stdout, "No tracked files in '%s'\n", dir))
+		return nil
 	}
 
 	rendered := make([]Entry, len(files))

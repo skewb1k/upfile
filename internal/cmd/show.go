@@ -17,7 +17,7 @@ func showCmd() *cobra.Command {
 			if err := service.Show(
 				cmd.Context(),
 				cmd.OutOrStdout(),
-				getStore(),
+				getIndexFsProvider(),
 				args[0],
 			); err != nil {
 				return fmt.Errorf("cannot show '%s': %w", args[0], err)

@@ -26,7 +26,7 @@ func syncCmd() *cobra.Command {
 				cmd.Context(),
 				cmd.InOrStdin(),
 				cmd.OutOrStdout(),
-				getStore(),
+				getIndexFsProvider(),
 				yes,
 				args[0],
 			); err != nil {

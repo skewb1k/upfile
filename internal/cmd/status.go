@@ -27,7 +27,7 @@ func statusCmd() *cobra.Command {
 			if err := service.Status(
 				cmd.Context(),
 				cmd.OutOrStdout(),
-				getStore(),
+				getIndexFsProvider(),
 				absDir,
 			); err != nil {
 				return fmt.Errorf("cannot show status of '%s': %w", absDir, err)

@@ -36,7 +36,7 @@ func Push(
 	}
 
 	if upstrem.Hash.EqualBytes(newContent) {
-		mustFmt(fmt.Fprintln(stdout, "File up-to-date"))
+		mustFmt(fmt.Fprintf(stdout, "Entry '%s' is up-to-date\n", path))
 		return nil
 	}
 

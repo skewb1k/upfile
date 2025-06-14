@@ -16,7 +16,7 @@ func diffCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			path, err := filepath.Abs(args[0])
 			if err != nil {
-				return fmt.Errorf("failed to get abs path to file: %w", err)
+				return fmt.Errorf("failed to get absolute path to file '%s': %w", args[0], err)
 			}
 
 			if err := service.Diff(
@@ -24,7 +24,7 @@ func diffCmd() *cobra.Command {
 				cmd.InOrStdin(),
 				cmd.OutOrStdout(),
 				cmd.ErrOrStderr(),
-				getStore(),
+				getIndexFsProvider(),
 				path,
 			); err != nil {
 				return fmt.Errorf("cannot show diff with '%s': %w", path, err)

@@ -25,7 +25,7 @@ func getBaseDir() string {
 	return filepath.Join(home, ".local", "share", "upfile")
 }
 
-func getStore() *indexFs.IndexFsProvider {
+func getIndexFsProvider() *indexFs.IndexFsProvider {
 	return indexFs.NewProvider(getBaseDir())
 }
 
