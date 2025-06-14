@@ -14,13 +14,26 @@ UpFile operates on a simple but powerful principles:
   are called `entries`.
 - Entry can be `pushed` to the upstream and be `pulled` from it.
 
-# Installation
+## Installation
+
+### Package Manager
+
+```bash
+# Arch Linux (AUR)
+yay -S upfile-bin
+```
+
+Support for other package managers is planned.
+
+Or download a binary from the [releases][releases] page.
+
+### Go
 
 ```bash
 go install github.com/skewb1k/upfile/cmd/upfile@latest
 ```
 
-# Basic Usage
+## Basic Usage
 
 Suppose you have two projects: project-a and project-b, and both have the same
 config file .prettierrc.
@@ -33,7 +46,7 @@ config file .prettierrc.
 And you want to keep them in sync, edit one file and easily spread changes to
 other places in other projects.
 
-## Add files to tracking
+### Add files to tracking
 
 Use `add` to register each file:
 
@@ -51,7 +64,7 @@ test.txt:
   /home/user/project-b/.prettierrc  Up-to-date
 ```
 
-## Make a change and push it
+### Make a change and push it
 
 Make a change in one of tracked files and push to the upstream.
 
@@ -69,7 +82,7 @@ test.txt:
   /home/user/project-b/.prettierrc  Modified
 ```
 
-## Sync other copies
+### Sync other copies
 
 ```bash
 $ upfile sync test.txt
@@ -81,18 +94,18 @@ Proceed? [Y/n]: y
 
 Now both files are consistent again.
 
-# Environment Variables
+## Environment Variables
 
 - `$UPFILE_DIR` - Path to the directory where UpFile stores metadata and
   upstream file versions. By default `$XDG_DATA_HOME/upfile`
 
-# Shell Completion
+## Shell Completion
 
 UpFile supports advanced and interactive shell completion for Bash, Zsh, fish, and PowerShell.
 
 See the instructions on `upfile completion <YOUR_SHELL> -h`
 
-# Contributing
+## Contributing
 
 Contributions are welcome. If you find a bug, have an idea, or want to improve
 something — feel free to open an issue or submit a pull request.
