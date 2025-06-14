@@ -10,17 +10,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// Populated by goreleaser during build
-var version = "unknown"
-
-func Main(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int {
+func Main(
+	version string,
+	args []string,
+	stdin io.Reader,
+	stdout io.Writer,
+	stderr io.Writer,
+) int {
 	cmd := &cobra.Command{
 		Use:     "upfile",
 		Version: version + "\n",
 		Short: `
 Track and sync files across projects
 
-Support project on Github: https://github.com/skewb1k/upfile
+Support tool on Github: https://github.com/skewb1k/upfile
 `[1:],
 		SilenceUsage:  true,
 		SilenceErrors: false,
@@ -45,7 +48,6 @@ Support project on Github: https://github.com/skewb1k/upfile
 	cmd.SetErr(stderr)
 
 	cmd.AddCommand(
-		versionCmd(),
 		addCmd(),
 		removeCmd(),
 		diffCmd(),

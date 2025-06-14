@@ -48,11 +48,21 @@ func Rename(
 		return fmt.Errorf("get entries by filename: %w", err)
 	}
 
+	// Check for conflicts
+	for _, dir := range entries {
+		newPath := filepath.Join(dir, newName)
+		if _, err := os.Stat(newPath); err == nil {
+			return fmt.Errorf("target path %s: %w", newPath, ErrTargetPathAlreadyExists)
+		} else if !errors.Is(err, os.ErrNotExist) {
+			return fmt.Errorf("stat target path %s: %w", newPath, err)
+		}
+	}
+
+	// Perform renames and index updates
 	for _, dir := range entries {
 		oldPath := filepath.Join(dir, oldName)
 		newPath := filepath.Join(dir, newName)
 
-		// Rename file on disk if it exists
 		if err := os.Rename(oldPath, newPath); err != nil && !errors.Is(err, os.ErrNotExist) {
 			return fmt.Errorf("rename file in dir %s: %w", dir, err)
 		}
@@ -60,7 +70,6 @@ func Rename(
 		if err := indexProvider.CreateEntry(ctx, newName, dir); err != nil {
 			return fmt.Errorf("add new entry: %w", err)
 		}
-
 		if err := indexProvider.DeleteEntry(ctx, oldName, dir); err != nil {
 			return fmt.Errorf("delete old entry: %w", err)
 		}
@@ -75,7 +84,6 @@ func Rename(
 	if err := indexProvider.SetUpstream(ctx, newName, &upstream); err != nil {
 		return fmt.Errorf("set upstream: %w", err)
 	}
-
 	if err := indexProvider.DeleteUpstream(ctx, oldName); err != nil {
 		return fmt.Errorf("delete old upstream: %w", err)
 	}

@@ -19,17 +19,15 @@ func completeFnames(
 		return nil, cobra.ShellCompDirectiveError
 	}
 
-	// Create a map for quick lookup of existing arguments
 	argMap := make(map[string]struct{})
 	for _, arg := range args {
 		argMap[arg] = struct{}{}
 	}
 
-	// Filter out files that are already present in args
 	var filteredFiles []string
 	for _, file := range files {
 		if _, found := argMap[file]; !found {
-			filteredFiles = append(filteredFiles, escapeBackSlashes(file))
+			filteredFiles = append(filteredFiles, escapeBackslashes(file))
 		}
 	}
 
@@ -51,7 +49,7 @@ func completeFname(
 	}
 
 	for i, file := range files {
-		files[i] = escapeBackSlashes(file)
+		files[i] = escapeBackslashes(file)
 	}
 
 	return files, cobra.ShellCompDirectiveNoFileComp
@@ -82,7 +80,6 @@ func completeEntry(cmd *cobra.Command, args []string, toComplete string) ([]stri
 		return nil, cobra.ShellCompDirectiveError
 	}
 
-	// Format tracked file suggestions
 	if underDir {
 		for i, f := range files {
 			files[i] = filepath.Join(toComplete, f)
@@ -108,15 +105,14 @@ func completeEntry(cmd *cobra.Command, args []string, toComplete string) ([]stri
 		}
 	}
 
-	// Escape backslashes
 	for i, f := range files {
-		files[i] = escapeBackSlashes(f)
+		files[i] = escapeBackslashes(f)
 	}
 
 	sort.Strings(files)
 	return files, cobra.ShellCompDirectiveNoSpace
 }
 
-func escapeBackSlashes(s string) string {
+func escapeBackslashes(s string) string {
 	return strings.ReplaceAll(s, `\`, `\\`)
 }
