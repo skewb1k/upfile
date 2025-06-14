@@ -8,8 +8,7 @@ It's designed to help you manage shared configuration files like .prettierrc,
 UpFile operates on a simple but powerful principles:
 
 - Each file identifies by unique `filename`.
-- Each filename has associated with its `upstream` version, which acts as the
-  source of truth.
+- Each filename is associated with an `upstream` version that acts as the source of truth.
 - You can add multiple instances of the same file across your projects. These
   are called `entries`.
 - Entry can be `pushed` to the upstream and be `pulled` from it.
@@ -25,7 +24,7 @@ yay -S upfile-bin
 
 Support for other package managers is planned.
 
-Or download a binary from the [releases][releases] page.
+Or download a binary from the [releases](https://github.com/skewb1k/upfile/releases) page.
 
 ### Go
 
@@ -48,14 +47,14 @@ other places in other projects.
 
 ### Add files to tracking
 
-Use `add` to register each file:
+Use `add` to track each file:
 
 ```bash
 $ upfile add ~/project-a/.prettierrc
 $ upfile add ~/project-b/.prettierrc
 ```
 
-Check tracked state:
+Check tracked status:
 
 ```bash
 $ upfile ls
@@ -66,14 +65,14 @@ test.txt:
 
 ### Make a change and push it
 
-Make a change in one of tracked files and push to the upstream.
+Make a change in one entry and push it to the upstream.
 
 ```bash
 $ echo 'change' >> ~/project-a/.prettierrc
 $ upfile push ~/project-a/.prettierrc
 ```
 
-List again to see status:
+List to see status:
 
 ```bash
 $ upfile ls
@@ -82,7 +81,7 @@ test.txt:
   /home/user/project-b/.prettierrc  Modified
 ```
 
-### Sync other copies
+### Sync with other entries
 
 ```bash
 $ upfile sync test.txt
@@ -93,6 +92,17 @@ Proceed? [Y/n]: y
 ```
 
 Now both files are consistent again.
+
+## Docs
+
+For a complete list of commands and detailed usage instructions, run:
+
+```bash
+upfile -h
+```
+
+This will display all available commands along with their descriptions.
+Check it out to explore advanced features and get the most out of UpFile.
 
 ## Environment Variables
 
