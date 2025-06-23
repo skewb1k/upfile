@@ -18,8 +18,11 @@ UpFile operates on a simple but powerful principles:
 ### Package Manager
 
 ```bash
-# Arch Linux (AUR)
 yay -S upfile-bin
+```
+
+```bash
+brew install skewb1k/homebrew-tap/upfile
 ```
 
 Support for other package managers is planned.
