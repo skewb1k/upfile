@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -56,4 +57,21 @@ func mustFmt(_ int, err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func IsRealDirectory(path string) error {
+	info, err := os.Stat(path)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return ErrDirNotExists
+		}
+
+		return err
+	}
+
+	if !info.IsDir() {
+		return ErrNotDirectory
+	}
+
+	return nil
 }

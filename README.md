@@ -101,9 +101,6 @@ For a complete list of commands and detailed usage instructions, run:
 upfile -h
 ```
 
-This will display all available commands along with their descriptions.
-Check it out to explore advanced features and get the most out of UpFile.
-
 ## Environment Variables
 
 - `$UPFILE_DIR` - Path to the directory where UpFile stores metadata and
@@ -123,5 +120,5 @@ something — feel free to open an issue or submit a pull request.
 Before committing, please make sure the code passes linting and tests:
 
 ```bash
-make lint test
+make ci
 ```

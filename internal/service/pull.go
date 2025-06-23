@@ -20,6 +20,7 @@ func Pull(
 	yes bool,
 	dest string,
 	fname string,
+	track bool,
 ) error {
 	if !validfname.ValidateFilename(fname) {
 		return ErrInvalidFilename
@@ -61,14 +62,16 @@ func Pull(
 		}
 	}
 
-	if err := indexProvider.CreateEntry(ctx, fname, dest); err != nil {
-		if !errors.Is(err, index.ErrExists) {
-			return fmt.Errorf("create entry: %w", err)
-		}
-	}
-
 	if err := MkdirAllWriteFile(path, upstream.Content); err != nil {
 		return err
+	}
+
+	if track {
+		if err := indexProvider.CreateEntry(ctx, fname, dest); err != nil {
+			if !errors.Is(err, index.ErrExists) {
+				return fmt.Errorf("create entry: %w", err)
+			}
+		}
 	}
 
 	return nil

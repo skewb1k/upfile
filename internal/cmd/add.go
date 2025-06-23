@@ -12,8 +12,8 @@ func addCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "add <path>...",
 		Short: "Start tracking specified file(s)",
-		Args:  cobra.MinimumNArgs(1),
 		// TODO: exclude tracked entries from completions
+		Args: cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			for _, arg := range args {
 				path, err := filepath.Abs(arg)

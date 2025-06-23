@@ -4,7 +4,6 @@ linters:
   disable:
     - cyclop
     - dupword
-    # - funcorder
     - funlen
     - nlreturn
     - gochecknoglobals
@@ -16,7 +15,6 @@ linters:
     - maintidx
     - nestif
     - nolintlint
-    # - nilnil
     - recvcheck
     - mnd
     - wsl
@@ -27,7 +25,6 @@ linters:
       enable-all: true
       disable:
         - fieldalignment # too strict
-      # Settings per analyzer.
       settings:
         shadow:
           # Whether to be strict about shadowing; can be noisy.
@@ -43,9 +40,9 @@ linters:
         - map
     gosec:
       excludes:
-        - G104
+    #     - G104
         - G204
-        - G301
+    #     - G301
         - G304
     revive:
       rules:
@@ -126,8 +123,6 @@ linters:
         - ^google.golang.org/protobuf/.+Options$
         - ^gopkg.in/yaml.v3.Node$
         - ^github.com/golang-jwt/jwt.v5.RegisteredClaims$
-        - ^github.com/golang-migrate/migrate.v4.database.pgx.v5.Config$
-        - ^github.com/redis/go-redis.v9.Options$
   exclusions:
     generated: lax
     rules:
@@ -150,5 +145,5 @@ linters:
         path: _test\.go
 formatters:
   enable:
-    - gofumpt
+    - gofmt
     - goimports

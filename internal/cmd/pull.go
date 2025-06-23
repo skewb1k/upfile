@@ -11,6 +11,7 @@ import (
 
 func pullCmd() *cobra.Command {
 	var yes bool
+	var track bool
 
 	cmd := &cobra.Command{
 		Use:               "pull <filename>...",
@@ -32,6 +33,7 @@ func pullCmd() *cobra.Command {
 					yes,
 					currentDir,
 					name,
+					track,
 				); err != nil {
 					if errors.Is(err, service.ErrCancelled) {
 						os.Exit(1)
@@ -46,6 +48,7 @@ func pullCmd() *cobra.Command {
 	}
 
 	cmd.Flags().BoolVarP(&yes, "yes", "y", false, "Automatic 'yes' to prompts")
+	cmd.Flags().BoolVarP(&track, "track", "t", false, "Start tracking pulled files")
 
 	return cmd
 }

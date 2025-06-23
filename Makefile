@@ -21,6 +21,9 @@ lint:
 test:
 	@go tool gotestsum -f testdox
 
+.PHONY: ci
+ci: test lint
+
 .PHONY: build
 build:
 	go build -o dist/$(BINARY) ./cmd/upfile

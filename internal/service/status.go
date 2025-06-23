@@ -2,31 +2,12 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
-	"os"
 	"path/filepath"
 
 	"github.com/charmbracelet/lipgloss"
 )
-
-func IsRealDirectory(path string) error {
-	info, err := os.Stat(path)
-	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return ErrDirNotExists
-		}
-
-		return err
-	}
-
-	if !info.IsDir() {
-		return ErrNotDirectory
-	}
-
-	return nil
-}
 
 func Status(
 	ctx context.Context,
@@ -48,33 +29,20 @@ func Status(
 		return nil
 	}
 
-	rendered := make([]Entry, len(files))
+	rendered := make([]*Entry, len(files))
 	maxWidth := 0
 
 	for i, fname := range files {
-		rendered[i] = Entry{
-			Path:   filepath.Join(dir, fname),
-			Status: EntryStatusUpToDate,
-			Err:    nil,
-		}
-
 		upstream, err := indexProvider.GetUpstream(ctx, fname)
 		if err != nil {
 			return fmt.Errorf("get upstream: %w", err)
 		}
 
-		existing, err := os.ReadFile(rendered[i].Path)
-		if err != nil {
-			if errors.Is(err, os.ErrNotExist) {
-				rendered[i].Status = EntryStatusDeleted
-			} else {
-				rendered[i].Err = errors.Unwrap(err)
-			}
-		} else if !upstream.Hash.EqualBytes(existing) {
-			rendered[i].Status = EntryStatusModified
-		}
+		path := filepath.Join(dir, fname)
 
-		if w := len(rendered[i].Path); w > maxWidth {
+		rendered[i] = getEntry(path, upstream.Hash)
+
+		if w := len(path); w > maxWidth {
 			maxWidth = w
 		}
 	}
@@ -84,7 +52,7 @@ func Status(
 		if e.Err != nil {
 			text = "error: " + e.Err.Error()
 		} else {
-			text = statusAsString(e.Status)
+			text = e.Status
 		}
 
 		line := lipgloss.JoinHorizontal(

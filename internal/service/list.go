@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 	"path/filepath"
 	"sort"
 
@@ -57,7 +56,7 @@ func List(
 		}
 	}
 
-	for fileIdx, upstream := range upstreamFiles {
+	for i, upstream := range upstreamFiles {
 		entriesList, err := indexProvider.GetEntriesByFilename(ctx, upstream.fname)
 		if err != nil {
 			return fmt.Errorf("get entries by filename: %w", err)
@@ -65,28 +64,15 @@ func List(
 
 		mustFmt(fmt.Println(_headingStyle.Render(upstream.fname)))
 
-		renderedEntries := make([]Entry, len(entriesList))
+		renderedEntries := make([]*Entry, len(entriesList))
 		maxWidth := 0
 
 		for entryIdx, entry := range entriesList {
-			renderedEntries[entryIdx] = Entry{
-				Path:   filepath.Join(entry, upstream.fname),
-				Status: EntryStatusUpToDate,
-				Err:    nil,
-			}
+			path := filepath.Join(entry, upstream.fname)
 
-			existing, err := os.ReadFile(renderedEntries[entryIdx].Path)
-			if err != nil {
-				if errors.Is(err, os.ErrNotExist) {
-					renderedEntries[entryIdx].Status = EntryStatusDeleted
-				} else {
-					renderedEntries[entryIdx].Err = errors.Unwrap(err)
-				}
-			} else if !upstream.Hash.EqualBytes(existing) {
-				renderedEntries[entryIdx].Status = EntryStatusModified
-			}
+			renderedEntries[entryIdx] = getEntry(path, upstream.Hash)
 
-			if w := len(renderedEntries[entryIdx].Path); w > maxWidth {
+			if w := len(path); w > maxWidth {
 				maxWidth = w
 			}
 		}
@@ -96,7 +82,7 @@ func List(
 			if e.Err != nil {
 				text = "error: " + e.Err.Error()
 			} else {
-				text = statusAsString(e.Status)
+				text = e.Status
 			}
 
 			line := lipgloss.JoinHorizontal(
@@ -112,7 +98,7 @@ func List(
 			mustFmt(fmt.Fprintln(stdout, line))
 		}
 
-		if fileIdx < len(files)-1 {
+		if i < len(files)-1 {
 			mustFmt(fmt.Fprintln(stdout))
 		}
 	}

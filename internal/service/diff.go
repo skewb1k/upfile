@@ -20,6 +20,7 @@ func Diff(
 	indexProvider IndexProvider,
 	path string,
 ) error {
+	path = filepath.Clean(path)
 	// TODO: use for built-in pager, now just for checking permissions
 	_, err := os.ReadFile(path)
 	if err != nil {
