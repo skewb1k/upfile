@@ -1,0 +1,22 @@
+version: '3'
+
+tasks:
+  fmt:
+    cmds:
+      - gofumpt -w -l .
+      - goimports -w -l .
+      - golangci-lint run --fix
+    silent: true
+  lint:
+    cmds:
+      - golangci-lint run
+    silent: true
+  test:
+    cmds:
+      - gotestsum -f testdox
+    silent: true
+  build:
+    cmds:
+      - go build -o dist/upfile ./cmd/upfile
+    silent: true
+
