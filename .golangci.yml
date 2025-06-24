@@ -1,4 +1,13 @@
 version: "2"
+run:
+  tests: false
+formatters:
+  enable:
+    - gofmt
+    - goimports
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
 linters:
   default: all
   disable:
@@ -132,18 +141,3 @@ linters:
       - text: 'shadow: declaration of "(err|ctx)" shadows declaration at'
         linters:
           - govet
-      - linters:
-          - bodyclose
-          - dupl
-          - errcheck
-          - err113
-          - exhaustruct
-          - goconst
-          - gosec
-          - noctx
-          - wrapcheck
-        path: _test\.go
-formatters:
-  enable:
-    - gofmt
-    - goimports

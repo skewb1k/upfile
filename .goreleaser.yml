@@ -1,10 +1,11 @@
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 # vim: set ts=2 sw=2 tw=0 fo=cnqoj
 version: 2
+project_name: upfile
 before:
   hooks:
     - go mod tidy
-project_name: upfile
+
 builds:
   - binary: upfile
     main: ./cmd/upfile/
@@ -24,6 +25,7 @@ archives:
     format_overrides:
       - goos: windows
         formats: [zip]
+
 # changelog:
 #   sort: asc
 #   filters:
@@ -43,7 +45,13 @@ aurs:
     package: |-
       # bin
       install -Dm755 "./upfile" "${pkgdir}/usr/bin/upfile"
-
+      # completions
+      mkdir -p "${pkgdir}/usr/share/bash-completion/completions/"
+      mkdir -p "${pkgdir}/usr/share/zsh/site-functions/"
+      mkdir -p "${pkgdir}/usr/share/fish/vendor_completions.d/"
+      "${pkgdir}/usr/bin/upfile" completion bash > "${pkgdir}/usr/share/bash-completion/completions/upfile"
+      "${pkgdir}/usr/bin/upfile" completion zsh > "${pkgdir}/usr/share/zsh/site-functions/_upfile"
+      "${pkgdir}/usr/bin/upfile" completion fish > "${pkgdir}/usr/share/fish/vendor_completions.d/upfile.fish"
       # license
       install -Dm644 "./LICENSE" "${pkgdir}/usr/share/licenses/upfile/LICENSE"
 brews:
@@ -58,9 +66,9 @@ brews:
     description: A CLI tool to manage and sync shared configuration files across projects.
     install: |-
       bin.install "upfile"
-      output = Utils.popen_read("#{bin}/upfile completion bash")
-      (bash_completion/"upfile").write output
-      output = Utils.popen_read("#{bin}/upfile completion zsh")
-      (zsh_completion/"_upfile").write output
-      output = Utils.popen_read("#{bin}/upfile completion fish")
-      (fish_completion/"upfile.fish").write output
+      bash_output = Utils.safe_popen_read("#{bin}/upfile", "completion", "bash")
+      (bash_completion/"upfile").write bash_output
+      zsh_output = Utils.safe_popen_read("#{bin}/upfile", "completion", "zsh")
+      (zsh_completion/"_upfile").write zsh_output
+      fish_output = Utils.safe_popen_read("#{bin}/upfile", "completion", "fish")
+      (fish_completion/"upfile.fish").write fish_output

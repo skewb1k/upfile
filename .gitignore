@@ -1,4 +1,5 @@
 /dist/
+/completions/
 
 /vendor/
 coverage.out
