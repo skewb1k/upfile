@@ -13,28 +13,6 @@ UpFile operates on a simple but powerful principles:
   are called `entries`.
 - Entry can be `pushed` to the upstream and be `pulled` from it.
 
-## Installation
-
-### Package Manager
-
-```bash
-yay -S upfile-bin
-```
-
-```bash
-brew install skewb1k/homebrew-tap/upfile
-```
-
-Support for other package managers is planned.
-
-Or download a binary from the [releases](https://github.com/skewb1k/upfile/releases) page.
-
-### Go
-
-```bash
-go install github.com/skewb1k/upfile/cmd/upfile@latest
-```
-
 ## Basic Usage
 
 Suppose you have two projects: project-a and project-b, and both have the same
@@ -102,6 +80,28 @@ For a complete list of commands and detailed usage instructions, run:
 
 ```bash
 upfile -h
+```
+
+## Installation
+
+### Package Manager
+
+```bash
+yay -S upfile-bin
+```
+
+```bash
+brew install skewb1k/homebrew-tap/upfile
+```
+
+Support for other package managers is planned.
+
+Or download a binary from the [releases](https://github.com/skewb1k/upfile/releases) page.
+
+### Go
+
+```bash
+go install github.com/skewb1k/upfile/cmd/upfile@latest
 ```
 
 ## Environment Variables

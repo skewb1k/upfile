@@ -3,7 +3,7 @@ run:
   tests: false
 formatters:
   enable:
-    - gofmt
+    - gofumpt
     - goimports
 issues:
   max-issues-per-linter: 0
@@ -27,6 +27,8 @@ linters:
     - recvcheck
     - mnd
     - wsl
+    - wsl_v5
+    - noinlineerr
   settings:
     govet:
       # Enable all analyzers.
@@ -49,9 +51,9 @@ linters:
         - map
     gosec:
       excludes:
-    #     - G104
+        #     - G104
         - G204
-    #     - G301
+        #     - G301
         - G304
     revive:
       rules:
