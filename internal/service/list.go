@@ -31,6 +31,7 @@ func List(
 
 	type upstreamFile struct {
 		Upstream
+
 		fname string
 	}
 

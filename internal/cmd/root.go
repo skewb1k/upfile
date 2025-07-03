@@ -25,8 +25,9 @@ Track and sync files across projects
 
 Support tool on Github: https://github.com/skewb1k/upfile
 `[1:],
-		SilenceUsage:  true,
-		SilenceErrors: false,
+		SilenceUsage:      true,
+		SilenceErrors:     false,
+		CompletionOptions: cobra.CompletionOptions{HiddenDefaultCmd: true},
 	}
 
 	cmd.SetVersionTemplate("{{.Version}}")
