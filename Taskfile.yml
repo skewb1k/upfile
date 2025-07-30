@@ -17,5 +17,5 @@ tasks:
     silent: true
   build:
     cmds:
-      - go build -o dist/upfile ./cmd/upfile
+      - go build
     silent: true

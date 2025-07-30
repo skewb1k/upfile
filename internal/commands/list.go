@@ -1,4 +1,4 @@
-package cmd
+package commands
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func listCmd() *cobra.Command {
+func List() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list [<filename>...]",
 		Short: "List tracked files and entries status",

@@ -1,4 +1,4 @@
-package cmd
+package commands
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func statusCmd() *cobra.Command {
+func Status() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "status [<dir>]",
 		Short: "Print status of files in dir (default: current dir)",

@@ -1,4 +1,4 @@
-package cmd
+package commands
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func addCmd() *cobra.Command {
+func Add() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "add <path>...",
 		Short: "Start tracking specified file(s)",

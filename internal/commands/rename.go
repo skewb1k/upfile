@@ -1,4 +1,4 @@
-package cmd
+package commands
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func renameCmd() *cobra.Command {
+func Rename() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "rename <old> <new>",
 		Short: "Rename all entries of file",

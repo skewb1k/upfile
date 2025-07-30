@@ -50,7 +50,7 @@ func Diff(
 	_ = tmpFile.Close()
 
 	// TODO: do not use git pager or at least have fallback to some built-in one
-	gitdiff := exec.Command("git", "diff", "--no-index", tmpFile.Name(), path)
+	gitdiff := exec.CommandContext(ctx, "git", "diff", "--no-index", tmpFile.Name(), path)
 	gitdiff.Stdin = stdin
 	gitdiff.Stdout = stdout
 	gitdiff.Stderr = stderr

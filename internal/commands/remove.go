@@ -1,4 +1,4 @@
-package cmd
+package commands
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func removeCmd() *cobra.Command {
+func Remove() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "remove <path>",
 		Short:   "Remove entry from tracked list",

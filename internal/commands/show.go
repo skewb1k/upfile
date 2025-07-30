@@ -1,4 +1,4 @@
-package cmd
+package commands
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func showCmd() *cobra.Command {
+func Show() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:               "show <filename>",
 		Short:             "Show upstream version of file",

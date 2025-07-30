@@ -1,4 +1,4 @@
-package cmd
+package commands
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func diffCmd() *cobra.Command {
+func Diff() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "diff <path>",
 		Short: "Compare file with its upstream",

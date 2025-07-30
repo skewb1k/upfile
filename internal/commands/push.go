@@ -1,4 +1,4 @@
-package cmd
+package commands
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func pushCmd() *cobra.Command {
+func Push() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:               "push <path>...",
 		Short:             "Push tracked file(s) to the upstream",

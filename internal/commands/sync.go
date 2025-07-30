@@ -1,4 +1,4 @@
-package cmd
+package commands
 
 import (
 	"errors"
@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func syncCmd() *cobra.Command {
+func Sync() *cobra.Command {
 	// TODO:
 	// like git add -p
 	// var patch bool
