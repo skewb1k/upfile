@@ -123,5 +123,5 @@ something — feel free to open an issue or submit a pull request.
 Before committing, please make sure the code passes linting and tests:
 
 ```bash
-task lint test
+make lint test
 ```

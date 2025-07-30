@@ -29,6 +29,7 @@ linters:
     - wsl
     - wsl_v5
     - noinlineerr
+    - tagliatelle
   settings:
     govet:
       # Enable all analyzers.
@@ -51,9 +52,8 @@ linters:
         - map
     gosec:
       excludes:
-        #     - G104
         - G204
-        #     - G301
+        - G302
         - G304
     revive:
       rules:
@@ -99,15 +99,6 @@ linters:
           deny:
             - pkg: log$
               desc: Use log/slog instead, see https://go.dev/blog/slog
-    tagliatelle:
-      case:
-        rules:
-          json: snake
-          yaml: snake
-          xml: camel
-          bson: camel
-          avro: snake
-          mapstructure: kebab
     exhaustruct:
       exclude:
         - ^net/http.Client$
