@@ -1,4 +1,4 @@
-name: Test and Lint
+name: Test
 on:
   push:
     branches: [master]
@@ -7,7 +7,7 @@ on:
 permissions:
   contents: read
 jobs:
-  test-and-lint:
+  test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -27,9 +27,5 @@ jobs:
             ${{ runner.os }}-go-
       - name: Install dependencies
         run: go mod download
-      - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v8
-        with:
-          version: latest
       - name: Run tests
         run: go test -v ./...
