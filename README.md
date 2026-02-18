@@ -101,7 +101,7 @@ Or download a binary from the [releases](https://github.com/skewb1k/upfile/relea
 ### Go
 
 ```bash
-go install github.com/skewb1k/upfile/cmd/upfile@latest
+go install github.com/skewb1k/upfile
 ```
 
 ## Environment Variables
