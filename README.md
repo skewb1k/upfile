@@ -2,8 +2,7 @@
 
 **UpFile** is a CLI tool for syncing files across multiple projects.
 
-It's designed to help you manage shared configuration files like .prettierrc,
-.golangci.yml, or any other files.
+It's designed to help you manage shared configuration files.
 
 UpFile operates on a simple but powerful principles:
 
@@ -114,14 +113,3 @@ go install github.com/skewb1k/upfile
 UpFile supports advanced and interactive shell completion for Bash, Zsh, fish, and PowerShell.
 
 See the instructions on `upfile completion <YOUR_SHELL> -h`
-
-## Contributing
-
-Contributions are welcome. If you find a bug, have an idea, or want to improve
-something — feel free to open an issue or submit a pull request.
-
-Before committing, please make sure the code passes linting and tests:
-
-```bash
-make lint test
-```
