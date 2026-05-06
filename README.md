@@ -6,3 +6,4 @@ Usage:
 
     upfile -push file
     upfile -pull file
+    upfile -list

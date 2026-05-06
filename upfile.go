@@ -12,6 +12,7 @@ import (
 var (
 	push = flag.Bool("push", false, "push file to upstream")
 	pull = flag.Bool("pull", false, "pull file from upstream")
+	list = flag.Bool("list", false, "list upstreams")
 )
 
 func usage() {
@@ -40,6 +41,13 @@ func main() {
 		err := pullCmd(flag.Args())
 		if err != nil {
 			log.Fatalf("pull: %s", err)
+		}
+		return
+	}
+	if *list {
+		err := listCmd(flag.Args())
+		if err != nil {
+			log.Fatalf("list: %s", err)
 		}
 		return
 	}
