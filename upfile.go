@@ -17,13 +17,13 @@ var (
 )
 
 func usage() {
-	fmt.Fprintf(flag.CommandLine.Output(), "usage: upfile [flags] [args ...]\n")
+	fmt.Fprintf(flag.CommandLine.Output(), "usage: %s [flags] [args ...]\n", os.Args[0])
 	flag.PrintDefaults()
 	os.Exit(2)
 }
 
 func main() {
-	log.SetPrefix("upfile: ")
+	log.SetPrefix(os.Args[0] + ": ")
 	log.SetFlags(0)
 	flag.Usage = usage
 	flag.Parse()
