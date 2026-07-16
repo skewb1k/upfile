@@ -4,7 +4,7 @@ Usage:
 
     go install github.com/arkriny/upfile@latest
 
-    upfile -push file
-    upfile -pull file
-    upfile -list
-    upfile -show
+    upfile push file
+    upfile pull file
+    upfile list
+    upfile show
