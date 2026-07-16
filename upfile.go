@@ -164,6 +164,16 @@ func usage() {
 	os.Exit(2)
 }
 
+var cmds = []struct {
+	name string
+	run  func(args []string) error
+}{
+	{"push", pushCmd},
+	{"pull", pullCmd},
+	{"list", listCmd},
+	{"show", showCmd},
+}
+
 func main() {
 	log.SetPrefix(os.Args[0] + ": ")
 	log.SetFlags(0)
@@ -175,27 +185,16 @@ func main() {
 		usage()
 	}
 
-	command := flag.Arg(0)
-
-	switch command {
-	case "push":
-		if err := pushCmd(flag.Args()[1:]); err != nil {
-			log.Fatalf("push: %s", err)
+	cmdname := flag.Arg(0)
+	for _, cmd := range cmds {
+		if cmd.name == cmdname {
+			if err := cmd.run(flag.Args()[1:]); err != nil {
+				log.Fatalf("%s: %s", cmdname, err)
+			}
+			return
 		}
-	case "pull":
-		if err := pullCmd(flag.Args()[1:]); err != nil {
-			log.Fatalf("pull: %s", err)
-		}
-	case "list":
-		if err := listCmd(flag.Args()[1:]); err != nil {
-			log.Fatalf("list: %s", err)
-		}
-	case "show":
-		if err := showCmd(flag.Args()[1:]); err != nil {
-			log.Fatalf("show: %s", err)
-		}
-	default:
-		log.Printf("unknown command %s", command)
-		usage()
 	}
+
+	log.Printf("unknown command %s", cmdname)
+	usage()
 }
