@@ -8,3 +8,6 @@ Usage:
     upfile pull file
     upfile list
     upfile show
+
+
+This is free software released into the public domain.
